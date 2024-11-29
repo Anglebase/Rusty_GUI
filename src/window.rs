@@ -22,7 +22,7 @@ impl Window {
                 }
                 std::ptr::null_mut()
             };
-            let hwnd = create_window(CLASS_NAME, "rsgui Window", 800, 600, parent_hwnd);
+            let hwnd = create_window(CLASS_NAME, "Rusty GUI Window", 800, 600, parent_hwnd);
             gmap_insert(hwnd, Box::new(wimpl));
             if G_MAINWINDOW.lock().unwrap().as_ref().is_none() {
                 *G_MAINWINDOW.lock().unwrap() = Some(Window { hwnd });

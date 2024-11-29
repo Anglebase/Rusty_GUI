@@ -1,16 +1,12 @@
+use crate::winproc::WinProc;
 /// This file contains the core implementation of this crate.
 /// author: Anglebase (https://github.com/Anglebase)
 /// ---------------------------------------------------------
-
-use std::{
-    collections::HashMap,
-    sync::Mutex,
-};
+use std::{collections::HashMap, sync::Mutex};
 use winapi::{
     shared::{minwindef::*, windef::*},
     um::{libloaderapi::*, winnt::*, winuser::*},
 };
-use crate::winproc::WinProc;
 
 pub(crate) fn string_to_wchar(s: &str) -> Vec<WCHAR> {
     let mut result = Vec::new();
@@ -101,7 +97,7 @@ pub struct Window {
     pub(crate) hwnd: HWND,
 }
 
-pub(crate) const CLASS_NAME: &str = "rsgui_window_class";
+pub(crate) const CLASS_NAME: &str = "rusty_gui_window_class";
 pub(crate) static mut G_MAP: Mutex<Option<HashMap<HWND, Box<dyn WinProc>>>> = Mutex::new(None);
 
 pub(crate) fn gmap_init() {
@@ -159,12 +155,11 @@ pub(crate) unsafe extern "system" fn gwndproc(
         }
         WM_LBUTTONDOWN => {
             {
-                G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].other();
+                G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd]
+                    .left_button_down(LOWORD(lparam as u32).into(), HIWORD(lparam as u32).into());
             }
             0
         }
         _ => DefWindowProcW(hwnd, msg, wparam, lparam),
     }
 }
-
-
