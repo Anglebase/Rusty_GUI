@@ -16,6 +16,6 @@ pub use core::{
     Rect,
     Graphics,
 };
-pub use winproc::WinProc;
+pub use winproc::*;
 pub use graph::Color;
 pub use app::App;
