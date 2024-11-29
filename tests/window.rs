@@ -4,7 +4,7 @@ use rusty_gui::*;
 fn window_creation() {
     struct MyWindow {}
     impl WinProc for MyWindow {
-        fn button_down(&self, button: Button) {
+        fn button_down(&mut self, button: Button) {
             match button {
                 Button::Left(point) => {
                     println!("Left button down at {:?}", point);

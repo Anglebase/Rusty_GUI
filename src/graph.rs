@@ -1,8 +1,9 @@
+use std::ptr::null_mut;
+
 /// This file contains system API interactions and encapsulation based on device handles.
 /// author: Anglebase (https://github.com/Anglebase)
 /// -------------------------------------------------------------------------------------
-
-use crate::Graphics;
+use crate::*;
 use winapi::{
     shared::windef::*,
     um::{wingdi::*, winuser::*},
@@ -15,7 +16,121 @@ pub struct Color {
     pub blue: u8,
 }
 
+#[macro_export]
+macro_rules! rgb {
+    ($r:expr, $g:expr, $b:expr $(,)?) => {
+        Color {
+            red: $r,
+            green: $g,
+            blue: $b,
+        }
+    };
+}
+
+impl Color {
+    pub const BLACK: Color = rgb!{ 0, 0, 0 };
+    pub const WHITE: Color = rgb!{ 255, 255, 255 };
+    pub const RED: Color = rgb!{ 255, 0, 0 };
+    pub const GREEN: Color = rgb!{ 0, 255, 0 };
+    pub const BLUE: Color = rgb!{ 0, 0, 255 };
+    pub const YELLOW: Color = rgb!{ 255, 255, 0 };
+    pub const CYAN: Color = rgb!{ 0, 255, 255 };
+    pub const MAGENTA: Color = rgb!{ 255, 0, 255 };
+}
+
+pub struct Pen {
+    pub(crate) hpen: HPEN,
+}
+impl Drop for Pen {
+    fn drop(&mut self) {
+        unsafe {
+            DeleteObject(self.hpen as HGDIOBJ);
+        }
+    }
+}
+
+pub enum PenStyle {
+    Solid,
+    Dash,
+    Dot,
+    DashDot,
+    DashDotDot,
+    Null,
+}
+
+impl Pen {
+    pub fn new(ps: PenStyle, width: i32, color: Color) -> Self {
+        let ps = match ps {
+            PenStyle::Solid => PS_SOLID,
+            PenStyle::Dash => PS_DASH,
+            PenStyle::Dot => PS_DOT,
+            PenStyle::DashDot => PS_DASHDOT,
+            PenStyle::DashDotDot => PS_DASHDOTDOT,
+            PenStyle::Null => PS_NULL,
+        };
+        Self {
+            hpen: unsafe { CreatePen(ps as i32, width, RGB(color.red, color.green, color.blue)) },
+        }
+    }
+}
+
+pub struct Brush {
+    pub(crate) hbrush: HBRUSH,
+}
+impl Drop for Brush {
+    fn drop(&mut self) {
+        unsafe {
+            DeleteObject(self.hbrush as HGDIOBJ);
+        }
+    }
+}
+impl Brush {
+    pub fn new(color: Color) -> Self {
+        Self {
+            hbrush: unsafe { CreateSolidBrush(RGB(color.red, color.green, color.blue)) },
+        }
+    }
+}
+
+// pub struct Font {
+//     pub(crate) hfont: HFONT,
+// }
+// impl Drop for Font {
+//     fn drop(&mut self) {
+//         unsafe {
+//             DeleteObject(self.hfont as HGDIOBJ);
+//         }
+//     }
+// }
+
 impl Graphics {
+    pub fn get_rect(&self) -> Rect {
+        unsafe {
+            let mut rect = RECT {
+                left: 0,
+                top: 0,
+                right: 0,
+                bottom: 0,
+            };
+            GetClientRect(self.hwnd, &mut rect);
+            Rect {
+                pos: p!(rect.left, rect.top),
+                size: s!(rect.right - rect.left, rect.bottom - rect.top),
+            }
+        }
+    }
+
+    pub fn apply_pen(&self, pen: &Pen) {
+        unsafe {
+            SelectObject(self.hdc, pen.hpen as HGDIOBJ);
+        }
+    }
+    pub fn apply_brush(&self, brush: &Brush) {
+        unsafe {
+            SelectObject(self.hdc, brush.hbrush as HGDIOBJ);
+        }
+    }
+
     pub fn full_clear(&mut self, color: Color) {
         unsafe {
             let mut rect = RECT {
@@ -28,6 +143,12 @@ impl Graphics {
             let bs = CreateSolidBrush(RGB(color.red, color.green, color.blue));
             FillRect(self.hdc, &rect, bs);
             DeleteObject(bs as HGDIOBJ);
+        }
+    }
+    pub fn line(&self, p1: Point, p2: Point) {
+        unsafe {
+            MoveToEx(self.hdc, p1.x, p1.y, null_mut());
+            LineTo(self.hdc, p2.x, p2.y);
         }
     }
 }

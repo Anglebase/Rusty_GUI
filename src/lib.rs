@@ -1,21 +1,14 @@
 /// Rusty GUI Library
 /// author: Anglebase (https://github.com/Anglebase)
 /// ------------------------------------------------
-
+mod app;
 mod core;
-mod window;
 mod graph;
 mod math;
+mod window;
 mod winproc;
-mod app;
 
-pub use core::{
-    Window,
-    Point,
-    Size,
-    Rect,
-    Graphics,
-};
-pub use winproc::*;
-pub use graph::Color;
 pub use app::App;
+pub use core::{Graphics, Point, Rect, Size, Window};
+pub use graph::{Brush, Color, Pen, PenStyle};
+pub use winproc::*;

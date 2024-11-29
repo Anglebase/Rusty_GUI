@@ -89,18 +89,18 @@ pub enum SizeType {
 
 #[allow(unused)]
 pub trait WinProc {
-    fn draw(&self, g: &mut Graphics) {}
+    fn draw(&mut self, g: &mut Graphics) {}
 
-    fn button_down(&self, button: Button) {}
-    fn button_up(&self, button: Button) {}
-    fn button_dbclk(&self, button: Button) {}
-    fn mouse_move(&self, point: Point, key: Option<Key>) {}
-    fn mouse_wheel(&self, point: Point, wheel: Wheel, key: Option<Key>) {}
+    fn button_down(&mut self, button: Button) {}
+    fn button_up(&mut self, button: Button) {}
+    fn button_dbclk(&mut self, button: Button) {}
+    fn mouse_move(&mut self, point: Point, key: Option<Key>) {}
+    fn mouse_wheel(&mut self, point: Point, wheel: Wheel, key: Option<Key>) {}
 
-    fn key_down(&self, key: Key) {}
-    fn key_up(&self, key: Key) {}
-    fn input(&self, text: &str) {}
+    fn key_down(&mut self, key: Key) {}
+    fn key_up(&mut self, key: Key) {}
+    fn input(&mut self, text: &str) {}
 
-    fn window_resize(&self, size: Size, size_type: SizeType) {}
-    fn window_move(&self, point: Point) {}
+    fn window_resize(&mut self, size: Size, size_type: SizeType) {}
+    fn window_move(&mut self, point: Point) {}
 }

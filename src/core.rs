@@ -73,10 +73,27 @@ pub struct Point {
     pub y: i32,
 }
 
+#[macro_export]
+macro_rules! p {
+    ($x:expr, $y:expr $(,)?) => {
+        Point { x: $x, y: $y }
+    };
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct Size {
     pub width: i32,
     pub height: i32,
+}
+
+#[macro_export]
+macro_rules! s {
+    ($w:expr, $h:expr $(,)?) => {
+        Size {
+            width: $w,
+            height: $h,
+        }
+    };
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -128,6 +145,10 @@ pub(crate) unsafe extern "system" fn gwndproc(
     wparam: WPARAM,
     lparam: LPARAM,
 ) -> LRESULT {
+    if !G_MAP.lock().unwrap().as_ref().unwrap().contains_key(&hwnd) {
+        println!("Warning: HWND Not Found in G_MAP.");
+        return DefWindowProcW(hwnd, msg, wparam, lparam);
+    }
     match msg {
         WM_PAINT => {
             let mut ps = PAINTSTRUCT {
@@ -141,7 +162,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
             let hdc = BeginPaint(hwnd, &mut ps);
             let mut graphics = Graphics { hdc, hwnd };
             {
-                G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].draw(&mut graphics);
+                G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().draw(&mut graphics);
             }
             EndPaint(hwnd, &ps);
             0
@@ -161,7 +182,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
         WM_CHAR => {
             let input: &str = &std::char::from_u32(wparam as u32).unwrap().to_string();
             {
-                G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].input(input);
+                G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().input(input);
             }
             0
         }
@@ -181,7 +202,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
                 _ => None,
             };
             {
-                G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].mouse_move(pos, ext);
+                G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().mouse_move(pos, ext);
             }
             0
         }
@@ -202,7 +223,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
             };
             let delta = HIWORD(wparam as u32) as i16;
             {
-                G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].mouse_wheel(
+                G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().mouse_wheel(
                     pos,
                     if delta > 0 {
                         Wheel::Up(delta)
@@ -228,7 +249,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
                 _ => SizeType::Unknown,
             };
             {
-                G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].window_resize(size, st);
+                G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().window_resize(size, st);
             }
             0
         }
@@ -238,7 +259,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
                 y: HIWORD(lparam as u32).into(),
             };
             {
-                G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].window_move(pos);
+                G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().window_move(pos);
             }
             0
         }
@@ -254,39 +275,39 @@ unsafe fn handle_mouse_event(hwnd: HWND, msg: UINT, wparam: WPARAM, lparam: LPAR
     };
     match msg {
         WM_LBUTTONDOWN => {
-            G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].button_down(Button::Left(point));
+            G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().button_down(Button::Left(point));
             return 0;
         }
         WM_LBUTTONUP => {
-            G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].button_up(Button::Left(point));
+            G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().button_up(Button::Left(point));
             return 0;
         }
         WM_LBUTTONDBLCLK => {
-            G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].button_dbclk(Button::Left(point));
+            G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().button_dbclk(Button::Left(point));
             return 0;
         }
         WM_MBUTTONDOWN => {
-            G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].button_down(Button::Middle(point));
+            G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().button_down(Button::Middle(point));
             return 0;
         }
         WM_MBUTTONUP => {
-            G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].button_up(Button::Middle(point));
+            G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().button_up(Button::Middle(point));
             return 0;
         }
         WM_MBUTTONDBLCLK => {
-            G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].button_dbclk(Button::Middle(point));
+            G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().button_dbclk(Button::Middle(point));
             return 0;
         }
         WM_RBUTTONDOWN => {
-            G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].button_down(Button::Right(point));
+            G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().button_down(Button::Right(point));
             return 0;
         }
         WM_RBUTTONUP => {
-            G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].button_up(Button::Right(point));
+            G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().button_up(Button::Right(point));
             return 0;
         }
         WM_RBUTTONDBLCLK => {
-            G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].button_dbclk(Button::Right(point));
+            G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().button_dbclk(Button::Right(point));
             return 0;
         }
         _ => {}
@@ -385,11 +406,11 @@ unsafe fn handle_key_event(hwnd: HWND, msg: UINT, wparam: WPARAM, lparam: LPARAM
     let key = vk_to_key(wparam as i32);
     match msg {
         WM_KEYDOWN => {
-            G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].key_down(key);
+            G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().key_down(key);
             return 0;
         }
         WM_KEYUP => {
-            G_MAP.lock().unwrap().as_ref().unwrap()[&hwnd].key_up(key);
+            G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().key_up(key);
             return 0;
         }
         _ => {}
