@@ -1,8 +1,11 @@
+use std::ptr::{null, null_mut};
+
 /// This file contains the management interface functions for the program.
 /// author: Anglebase (https://github.com/Anglebase)
 /// ----------------------------------------------------------------------
-
 use winapi::{shared::windef::*, um::winuser::*};
+
+use crate::core::G_MAP;
 
 #[allow(unused)]
 pub struct App {}
@@ -11,7 +14,7 @@ impl App {
     /// Runs the main loop of the program.
     /// This function is blocking and will not return until the program is closed.
     /// It should be called at the end of the `main` function.
-    /// 
+    ///
     /// # Example
     /// ```
     /// fn main() {
@@ -30,16 +33,30 @@ impl App {
             pt: POINT { x: 0, y: 0 },
         };
         unsafe {
-            while GetMessageW(&mut msg, std::ptr::null_mut(), 0, 0) != 0 {
-                TranslateMessage(&msg);
-                DispatchMessageW(&msg);
+            loop {
+                for key in G_MAP.lock().unwrap().as_ref().unwrap().keys() {
+                    RedrawWindow(
+                        *key as HWND,
+                        null(),
+                        null_mut(),
+                        RDW_INTERNALPAINT | RDW_INVALIDATE,
+                    );
+                }
+                let ret = PeekMessageW(&mut msg, std::ptr::null_mut(), 0, 0, PM_REMOVE);
+                if ret != 0 {
+                    TranslateMessage(&msg);
+                    DispatchMessageW(&msg);
+                }
+                if msg.message == WM_QUIT {
+                    break;
+                }
             }
         }
     }
 
     /// When this function is called, it will notify the event loop to exit.
     /// It will not immediately terminate the program.
-    /// 
+    ///
     /// # Example
     /// ```
     /// struct MyWindow {}
@@ -48,7 +65,7 @@ impl App {
     ///         App::exit(); // this will cause the program to exit.
     ///     }
     /// }
-    /// 
+    ///
     /// ```
     #[allow(unused)]
     pub fn exit() {
