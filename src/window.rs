@@ -27,6 +27,7 @@ impl Window {
             if G_MAINWINDOW.lock().unwrap().as_ref().is_none() {
                 *G_MAINWINDOW.lock().unwrap() = Some(Window { hwnd });
             }
+            G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).unwrap().init();
             Self { hwnd }
         }
     }

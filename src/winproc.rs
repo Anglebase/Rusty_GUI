@@ -87,6 +87,9 @@ pub enum SizeType {
     Unknown,
 }
 
+/// The `WinProc` trait defines the interface of window procedures.
+/// If you want to create a custom window, you should implement this trait for your window struct.
+/// Then create the window by the `Window::new(...)`.
 #[allow(unused)]
 pub trait WinProc {
     /// This method is called when the window is created.
@@ -99,16 +102,26 @@ pub trait WinProc {
     /// This method is called when the window needs to be redrawn.
     fn draw(&mut self, g: &mut Graphics) {}
 
+    /// This method is called when a mouse button is pressed.
     fn button_down(&mut self, button: Button) {}
+    /// This method is called when a mouse button is released.
     fn button_up(&mut self, button: Button) {}
+    /// This method is called when a mouse button is double-clicked.
     fn button_dbclk(&mut self, button: Button) {}
+    /// This method is called when the mouse is moved.
     fn mouse_move(&mut self, point: Point, key: Option<Key>) {}
+    /// This method is called when the mouse wheel is scrolled.
     fn mouse_wheel(&mut self, point: Point, wheel: Wheel, key: Option<Key>) {}
 
+    /// This method is called when a key is pressed.
     fn key_down(&mut self, key: Key) {}
+    /// This method is called when a key is released.
     fn key_up(&mut self, key: Key) {}
+    /// This method is called when a character is input.
     fn input(&mut self, text: &str) {}
 
+    /// This method is called when the window is resized.
     fn window_resize(&mut self, size: Size, size_type: SizeType) {}
+    /// This method is called when the window is moved.
     fn window_move(&mut self, point: Point) {}
 }
