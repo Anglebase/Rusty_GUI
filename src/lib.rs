@@ -10,5 +10,5 @@ mod winproc;
 
 pub use app::App;
 pub use core::{Graphics, Point, Rect, Size, Window};
-pub use graph::{Brush, Color, Pen, PenStyle};
+pub use graph::{Brush, Color, Pen, PenStyle, Font, FontStyle, FontWeight};
 pub use winproc::*;
