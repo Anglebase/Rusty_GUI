@@ -1,7 +1,7 @@
 /// This file defines traits related to window procedures as interfaces.
 /// author: Anglebase (https://github.com/Anglebase)
 /// --------------------------------------------------------------------
-use crate::Graphics;
+use crate::{Graphics, Window};
 use crate::{Point, Size};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -94,34 +94,34 @@ pub enum SizeType {
 pub trait WinProc {
     /// This method is called when the window is created.
     /// You can add initialization code here.
-    fn init(&mut self) {}
+    fn init(&mut self, window: &mut Window) {}
     /// This method is called when the window is destroyed.
     /// You can add cleanup code here.
-    fn destroy(&mut self) {}
+    fn destroy(&mut self, window: &mut Window) {}
 
     /// This method is called when the window needs to be redrawn.
-    fn draw(&mut self, g: &mut Graphics) {}
+    fn draw(&mut self, window: &mut Window, g: &mut Graphics) {}
 
     /// This method is called when a mouse button is pressed.
-    fn button_down(&mut self, button: Button) {}
+    fn button_down(&mut self, window: &mut Window, button: Button) {}
     /// This method is called when a mouse button is released.
-    fn button_up(&mut self, button: Button) {}
+    fn button_up(&mut self, window: &mut Window, button: Button) {}
     /// This method is called when a mouse button is double-clicked.
-    fn button_dbclk(&mut self, button: Button) {}
+    fn button_dbclk(&mut self, window: &mut Window, button: Button) {}
     /// This method is called when the mouse is moved.
-    fn mouse_move(&mut self, point: Point, key: Option<Key>) {}
+    fn mouse_move(&mut self, window: &mut Window, point: Point, key: Option<Key>) {}
     /// This method is called when the mouse wheel is scrolled.
-    fn mouse_wheel(&mut self, point: Point, wheel: Wheel, key: Option<Key>) {}
+    fn mouse_wheel(&mut self, window: &mut Window, point: Point, wheel: Wheel, key: Option<Key>) {}
 
     /// This method is called when a key is pressed.
-    fn key_down(&mut self, key: Key) {}
+    fn key_down(&mut self, window: &mut Window, key: Key) {}
     /// This method is called when a key is released.
-    fn key_up(&mut self, key: Key) {}
+    fn key_up(&mut self, window: &mut Window, key: Key) {}
     /// This method is called when a character is input.
-    fn input(&mut self, text: &str) {}
+    fn input(&mut self, window: &mut Window, text: &str) {}
 
     /// This method is called when the window is resized.
-    fn window_resize(&mut self, size: Size, size_type: SizeType) {}
+    fn window_resize(&mut self, window: &mut Window, size: Size, size_type: SizeType) {}
     /// This method is called when the window is moved.
-    fn window_move(&mut self, point: Point) {}
+    fn window_move(&mut self, window: &mut Window, point: Point) {}
 }

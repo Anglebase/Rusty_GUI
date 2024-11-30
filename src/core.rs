@@ -148,6 +148,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
         // Cannot guarantee that the window is registered with the global map before calling this function.
         return DefWindowProcW(hwnd, msg, wparam, lparam);
     }
+    let mut it = Window { hwnd };
     match msg {
         WM_PAINT => {
             // double buffering
@@ -172,7 +173,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
                 CreateCompatibleBitmap(hdc, rect.right - rect.left, rect.bottom - rect.top);
             let prebmp = SelectObject(buffer, bitmap as *mut _) as HBITMAP;
 
-            let mut graphics = Graphics { hdc: buffer, hwnd };
+            let mut graphics = Graphics { hdc: buffer };
             {
                 G_MAP
                     .lock()
@@ -182,7 +183,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
                     .get_mut(&hwnd)
                     .as_mut()
                     .unwrap()
-                    .draw(&mut graphics);
+                    .draw(&mut it, &mut graphics);
             }
             BitBlt(
                 hdc,
@@ -202,7 +203,14 @@ pub(crate) unsafe extern "system" fn gwndproc(
             0
         }
         WM_DESTROY => {
-            G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).unwrap().destroy();
+            G_MAP
+                .lock()
+                .unwrap()
+                .as_mut()
+                .unwrap()
+                .get_mut(&hwnd)
+                .unwrap()
+                .destroy(&mut it);
             gmap_remove(hwnd);
             if G_MAINWINDOW.lock().unwrap().as_ref().unwrap().hwnd == hwnd {
                 PostQuitMessage(0);
@@ -225,7 +233,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
                     .get_mut(&hwnd)
                     .as_mut()
                     .unwrap()
-                    .input(input);
+                    .input(&mut it, input);
             }
             0
         }
@@ -253,7 +261,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
                     .get_mut(&hwnd)
                     .as_mut()
                     .unwrap()
-                    .mouse_move(pos, ext);
+                    .mouse_move(&mut it, pos, ext);
             }
             0
         }
@@ -283,6 +291,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
                     .as_mut()
                     .unwrap()
                     .mouse_wheel(
+                        &mut it,
                         pos,
                         if delta > 0 {
                             Wheel::Up(delta)
@@ -316,7 +325,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
                     .get_mut(&hwnd)
                     .as_mut()
                     .unwrap()
-                    .window_resize(size, st);
+                    .window_resize(&mut it, size, st);
             }
             0
         }
@@ -334,7 +343,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
                     .get_mut(&hwnd)
                     .as_mut()
                     .unwrap()
-                    .window_move(pos);
+                    .window_move(&mut it, pos);
             }
             0
         }
@@ -348,6 +357,7 @@ unsafe fn handle_mouse_event(hwnd: HWND, msg: UINT, wparam: WPARAM, lparam: LPAR
         x: LOWORD(lparam as u32).into(),
         y: HIWORD(lparam as u32).into(),
     };
+    let mut it = Window { hwnd };
     match msg {
         WM_LBUTTONDOWN => {
             G_MAP
@@ -358,7 +368,7 @@ unsafe fn handle_mouse_event(hwnd: HWND, msg: UINT, wparam: WPARAM, lparam: LPAR
                 .get_mut(&hwnd)
                 .as_mut()
                 .unwrap()
-                .button_down(Button::Left(point));
+                .button_down(&mut it, Button::Left(point));
             return 0;
         }
         WM_LBUTTONUP => {
@@ -370,7 +380,7 @@ unsafe fn handle_mouse_event(hwnd: HWND, msg: UINT, wparam: WPARAM, lparam: LPAR
                 .get_mut(&hwnd)
                 .as_mut()
                 .unwrap()
-                .button_up(Button::Left(point));
+                .button_up(&mut it, Button::Left(point));
             return 0;
         }
         WM_LBUTTONDBLCLK => {
@@ -382,7 +392,7 @@ unsafe fn handle_mouse_event(hwnd: HWND, msg: UINT, wparam: WPARAM, lparam: LPAR
                 .get_mut(&hwnd)
                 .as_mut()
                 .unwrap()
-                .button_dbclk(Button::Left(point));
+                .button_dbclk(&mut it, Button::Left(point));
             return 0;
         }
         WM_MBUTTONDOWN => {
@@ -394,7 +404,7 @@ unsafe fn handle_mouse_event(hwnd: HWND, msg: UINT, wparam: WPARAM, lparam: LPAR
                 .get_mut(&hwnd)
                 .as_mut()
                 .unwrap()
-                .button_down(Button::Middle(point));
+                .button_down(&mut it, Button::Middle(point));
             return 0;
         }
         WM_MBUTTONUP => {
@@ -406,7 +416,7 @@ unsafe fn handle_mouse_event(hwnd: HWND, msg: UINT, wparam: WPARAM, lparam: LPAR
                 .get_mut(&hwnd)
                 .as_mut()
                 .unwrap()
-                .button_up(Button::Middle(point));
+                .button_up(&mut it, Button::Middle(point));
             return 0;
         }
         WM_MBUTTONDBLCLK => {
@@ -418,7 +428,7 @@ unsafe fn handle_mouse_event(hwnd: HWND, msg: UINT, wparam: WPARAM, lparam: LPAR
                 .get_mut(&hwnd)
                 .as_mut()
                 .unwrap()
-                .button_dbclk(Button::Middle(point));
+                .button_dbclk(&mut it, Button::Middle(point));
             return 0;
         }
         WM_RBUTTONDOWN => {
@@ -430,7 +440,7 @@ unsafe fn handle_mouse_event(hwnd: HWND, msg: UINT, wparam: WPARAM, lparam: LPAR
                 .get_mut(&hwnd)
                 .as_mut()
                 .unwrap()
-                .button_down(Button::Right(point));
+                .button_down(&mut it, Button::Right(point));
             return 0;
         }
         WM_RBUTTONUP => {
@@ -442,7 +452,7 @@ unsafe fn handle_mouse_event(hwnd: HWND, msg: UINT, wparam: WPARAM, lparam: LPAR
                 .get_mut(&hwnd)
                 .as_mut()
                 .unwrap()
-                .button_up(Button::Right(point));
+                .button_up(&mut it, Button::Right(point));
             return 0;
         }
         WM_RBUTTONDBLCLK => {
@@ -454,7 +464,7 @@ unsafe fn handle_mouse_event(hwnd: HWND, msg: UINT, wparam: WPARAM, lparam: LPAR
                 .get_mut(&hwnd)
                 .as_mut()
                 .unwrap()
-                .button_dbclk(Button::Right(point));
+                .button_dbclk(&mut it, Button::Right(point));
             return 0;
         }
         _ => {}
@@ -551,6 +561,7 @@ fn vk_to_key(vk: i32) -> Key {
 // this function is used to handle key events
 unsafe fn handle_key_event(hwnd: HWND, msg: UINT, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
     let key = vk_to_key(wparam as i32);
+    let mut it = Window { hwnd };
     match msg {
         WM_KEYDOWN => {
             G_MAP
@@ -561,7 +572,7 @@ unsafe fn handle_key_event(hwnd: HWND, msg: UINT, wparam: WPARAM, lparam: LPARAM
                 .get_mut(&hwnd)
                 .as_mut()
                 .unwrap()
-                .key_down(key);
+                .key_down(&mut it, key);
             return 0;
         }
         WM_KEYUP => {
@@ -573,7 +584,7 @@ unsafe fn handle_key_event(hwnd: HWND, msg: UINT, wparam: WPARAM, lparam: LPARAM
                 .get_mut(&hwnd)
                 .as_mut()
                 .unwrap()
-                .key_up(key);
+                .key_up(&mut it, key);
             return 0;
         }
         _ => {}
