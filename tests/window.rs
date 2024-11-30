@@ -4,6 +4,10 @@ use rusty_gui::*;
 fn window_creation() {
     struct MyWindow {}
     impl WinProc for MyWindow {
+        fn draw(&mut self, g: &mut Graphics) {
+            g.full_clear(Color::WHITE);
+        }
+
         fn button_down(&mut self, button: Button) {
             match button {
                 Button::Left(point) => {
@@ -18,7 +22,7 @@ fn window_creation() {
             }
         }
     }
-    let w = Window::new(MyWindow {}, None);
+    let w = Window::new(Box::new(MyWindow {}), None);
     w.show();
     App::run();
 }
