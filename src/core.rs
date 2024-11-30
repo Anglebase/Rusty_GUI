@@ -151,6 +151,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
     }
     match msg {
         WM_PAINT => {
+            // double buffering
             let mut ps = PAINTSTRUCT {
                 hdc: std::ptr::null_mut(),
                 fErase: 0,
@@ -159,11 +160,45 @@ pub(crate) unsafe extern "system" fn gwndproc(
                 fIncUpdate: 0,
                 rgbReserved: [0; 32],
             };
+            let mut rect = RECT {
+                left: 0,
+                top: 0,
+                right: 0,
+                bottom: 0,
+            };
+            GetClientRect(hwnd, &mut rect);
             let hdc = BeginPaint(hwnd, &mut ps);
-            let mut graphics = Graphics { hdc, hwnd };
+            let buffer = CreateCompatibleDC(hdc);
+            let bitmap =
+                CreateCompatibleBitmap(hdc, rect.right - rect.left, rect.bottom - rect.top);
+            let prebmp = SelectObject(buffer, bitmap as *mut _) as HBITMAP;
+
+            let mut graphics = Graphics { hdc: buffer, hwnd };
             {
-                G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).as_mut().unwrap().draw(&mut graphics);
+                G_MAP
+                    .lock()
+                    .unwrap()
+                    .as_mut()
+                    .unwrap()
+                    .get_mut(&hwnd)
+                    .as_mut()
+                    .unwrap()
+                    .draw(&mut graphics);
             }
+            BitBlt(
+                hdc,
+                0,
+                0,
+                rect.right - rect.left,
+                rect.bottom - rect.top,
+                buffer,
+                0,
+                0,
+                SRCCOPY,
+            );
+            SelectObject(buffer, prebmp as *mut _);
+            DeleteObject(bitmap as *mut _);
+            DeleteDC(buffer);
             EndPaint(hwnd, &ps);
             0
         }
