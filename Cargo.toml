@@ -1,7 +1,7 @@
 [package]
 name = "rusty_gui"
 version = "0.1.0"
-edition = "2025"
+edition = "2024"
 description = "This is a simple GUI library for Rust."
 license = "Apache-2.0"
 repository = "https://github.com/Anglebase/Rusty_GUI.git"
