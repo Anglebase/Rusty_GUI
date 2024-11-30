@@ -105,7 +105,6 @@ pub struct Rect {
 #[allow(unused)]
 pub struct Graphics {
     pub(crate) hdc: HDC,
-    pub(crate) hwnd: HWND,
 }
 
 #[derive(Clone, Copy)]

@@ -163,21 +163,6 @@ impl Font {
 }
 
 impl Graphics {
-    pub fn get_rect(&self) -> Rect {
-        unsafe {
-            let mut rect = RECT {
-                left: 0,
-                top: 0,
-                right: 0,
-                bottom: 0,
-            };
-            GetClientRect(self.hwnd, &mut rect);
-            Rect {
-                pos: p!(rect.left, rect.top),
-                size: s!(rect.right - rect.left, rect.bottom - rect.top),
-            }
-        }
-    }
     pub fn apply_pen(&self, pen: &Pen) {
         unsafe {
             SelectObject(self.hdc, pen.hpen as HGDIOBJ);
@@ -194,7 +179,7 @@ impl Graphics {
         }
     }
 
-    pub fn full_clear(&mut self, color: Color) {
+    pub fn full_clear(&mut self, window: &Window, color: Color) {
         unsafe {
             let mut rect = RECT {
                 left: 0,
@@ -202,7 +187,7 @@ impl Graphics {
                 right: 0,
                 bottom: 0,
             };
-            GetClientRect(self.hwnd, &mut rect);
+            GetClientRect(window.hwnd, &mut rect);
             let bs = CreateSolidBrush(RGB(color.red, color.green, color.blue));
             FillRect(self.hdc, &rect, bs);
             DeleteObject(bs as HGDIOBJ);
