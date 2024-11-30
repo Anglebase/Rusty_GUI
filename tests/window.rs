@@ -76,3 +76,23 @@ fn update_test() {
     w.show();
     App::run();
 }
+
+#[test]
+fn easy_demo() {
+    struct MyWin {}
+
+    // `WinProc` is the interface that you need to implement to create a window.
+    // You can create a empty impl block to get started.
+    // All of its functions have default implementations (Empty implementations).
+    impl WinProc for MyWin {
+        fn draw(&mut self, g: &mut Graphics) {
+            // The window drawing uses double buffering, so the default background is black. 
+            // If you think it's harmless, you can skip adding this code.
+            g.full_clear(Color::WHITE);
+        }
+    }
+
+    let window = Window::new(Box::new(MyWin {}), None);
+    window.show();
+    App::run();
+}

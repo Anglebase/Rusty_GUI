@@ -13,28 +13,26 @@ rusty_gui = "0.1.0"
 
 # Example
 
+A simple example of creating a window and showing it:
 ```rust
 use rusty_gui::*;
 
-fn main() {
-    struct MyWindow {}
-    impl WinProc for MyWindow {
-        fn button_down(&mut self, button: Button) {
-            match button {
-                Button::Left(point) => {
-                    println!("Left button down at {:?}", point);
-                }
-                Button::Right(point) => {
-                    println!("Right button down at {:?}", point);
-                }
-                Button::Middle(point) => {
-                    println!("Middle button down at {:?}", point);
-                }
-            }
+fn main() { 
+    struct MyWin {}
+
+    // `WinProc` is the interface that you need to implement to create a window.
+    // You can create a empty impl block to get started.
+    // All of its functions have default implementations (Empty implementations).
+    impl WinProc for MyWin {
+        fn draw(&mut self, g: &mut Graphics) {
+            // The window drawing uses double buffering, so the default background is black. 
+            // If you think it's harmless, you can skip adding this code.
+            g.full_clear(Color::WHITE);
         }
     }
-    let w = Window::new(MyWindow {}, None);
-    w.show();
+
+    let window = Window::new(Box::new(MyWin {}), None);
+    window.show();
     App::run();
 }
 ```
