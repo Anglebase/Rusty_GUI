@@ -8,7 +8,7 @@ use crate::WinProc;
 
 impl Window {
     #[allow(unused)]
-    pub fn new(wimpl: impl WinProc + 'static, parent: Option<&Window>) -> Self {
+    pub fn new(wimpl: Box<impl WinProc + 'static>, parent: Option<&Window>) -> Self {
         unsafe {
             if gmap_is_null() {
                 gmap_init();
@@ -23,7 +23,7 @@ impl Window {
                 std::ptr::null_mut()
             };
             let hwnd = create_window(CLASS_NAME, "Rusty GUI Window", 800, 600, parent_hwnd);
-            gmap_insert(hwnd, Box::new(wimpl));
+            gmap_insert(hwnd, wimpl);
             if G_MAINWINDOW.lock().unwrap().as_ref().is_none() {
                 *G_MAINWINDOW.lock().unwrap() = Some(Window { hwnd });
             }
