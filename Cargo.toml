@@ -9,4 +9,10 @@ repository = "https://github.com/Anglebase/Rusty_GUI.git"
 [dependencies]
 
 [target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3", features = ["winuser", "libloaderapi", "wingdi", "errhandlingapi"] }
+winapi = { version = "0.3", features = [
+    "winuser",
+    "libloaderapi",
+    "wingdi",
+    "errhandlingapi",
+    "processthreadsapi",
+] }
