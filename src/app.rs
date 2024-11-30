@@ -1,56 +1,65 @@
-use std::ptr::{null, null_mut};
+use std::{env::JoinPathsError, ptr::null_mut, sync::Mutex, thread::JoinHandle};
 
 /// This file contains the management interface functions for the program.
 /// author: Anglebase (https://github.com/Anglebase)
 /// ----------------------------------------------------------------------
-use winapi::{shared::windef::*, um::winuser::*};
+use winapi::{
+    shared::{
+        minwindef::{DWORD, LPVOID},
+        windef::*,
+    },
+    um::{processthreadsapi::CreateThread, winuser::*},
+};
 
-use crate::core::G_MAP;
+use crate::{WinProc, Window};
 
 #[allow(unused)]
-pub struct App {}
+pub struct App {
+    pub root: Window,
+}
 
 impl App {
-    /// Runs the main loop of the program.
-    /// This function is blocking and will not return until the program is closed.
-    /// It should be called at the end of the `main` function.
-    /// It should be noted that before this function is called,
-    /// you must ensure that a window has been created.
-    ///
-    /// # Example
-    /// ```
-    /// use rusty_gui::App;
-    /// 
-    /// fn main() {
-    ///     //...Other initialization code...
-    ///     App::run();
-    /// }
-    /// ```
-    #[allow(unused)]
-    pub fn run() {
+    pub fn new(wimpl: Box<impl WinProc + 'static>) -> Self {
+        let root = Window::new(wimpl, None);
+        Self { root }
+    }
+}
+
+// A part of the WIN32 API functions will casue thread self-locking if these are called in the main thread,
+// so this function `th_callback` is used to execute those functions in a separate thread.
+static mut FUNC: Mutex<Option<Box<dyn Fn()>>> = Mutex::new(None);
+unsafe extern "system" fn th_callback(_: LPVOID) -> DWORD {
+    loop {
+        let f = {
+            let mut buf = FUNC.lock().unwrap();
+            let f = buf.take();
+            *buf = None;
+            f
+        };
+        if let Some(f) = f {
+            f();
+        }
+    }
+}
+
+impl App {
+    unsafe fn exec(&mut self) {
+        SetProcessDPIAware();
         let mut msg = MSG {
-            hwnd: std::ptr::null_mut(),
+            hwnd: null_mut(),
             message: 0,
             wParam: 0,
             lParam: 0,
             time: 0,
             pt: POINT { x: 0, y: 0 },
         };
-        unsafe {
-            loop {
-                for key in G_MAP.lock().unwrap().as_ref().unwrap().keys() {
-                    RedrawWindow(
-                        *key as HWND,
-                        null(),
-                        null_mut(),
-                        RDW_INTERNALPAINT | RDW_INVALIDATE,
-                    );
-                }
-                let ret = PeekMessageW(&mut msg, std::ptr::null_mut(), 0, 0, PM_REMOVE);
-                if ret != 0 {
-                    TranslateMessage(&msg);
-                    DispatchMessageW(&msg);
-                }
+        // this thread's deadline same as the program's deadline.
+        CreateThread(null_mut(), 0, Some(th_callback), null_mut(), 0, null_mut());
+        // main thread's message loop
+        loop {
+            if PeekMessageW(&mut msg, core::ptr::null_mut(), 0, 0, PM_REMOVE) != 0 {
+                TranslateMessage(&msg);
+                DispatchMessageW(&msg);
                 if msg.message == WM_QUIT {
                     break;
                 }
@@ -58,31 +67,20 @@ impl App {
         }
     }
 
-    /// When this function is called, it will notify the event loop to exit.
-    /// It will not immediately terminate the program.
-    ///
-    /// # Example
-    /// ```
-    /// use rusty_gui::*;
-    /// 
-    /// struct MyWindow {}
-    /// impl WinProc for MyWindow {
-    ///     fn button_up(&mut self, btn: Button) {
-    ///         if let Button::Left(_) = btn  {
-    ///             App::exit(); // this will cause the program to exit.
-    ///         }
-    ///     }
-    /// }
-    /// 
-    /// fn main() {
-    ///     let window = Window::new(Box::new(MyWindow {}), None);
-    ///     window.show();
-    ///     App::run();
-    /// }
-    ///
-    /// ```
-    #[allow(unused)]
-    pub fn exit() {
-        unsafe { PostQuitMessage(0) };
+    // this is the interface function to push functions that cannot be executed in the main thread to `th_callback`.
+    pub(crate) fn push(f: impl Fn() + 'static) {
+        unsafe {
+            let mut buf = FUNC.lock().unwrap();
+            while let Some(_) = *buf {} // wait
+            *buf = Some(Box::new(f));
+        }
+    }
+}
+
+impl Drop for App {
+    fn drop(&mut self) {
+        unsafe {
+            self.exec();
+        }
     }
 }
