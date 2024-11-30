@@ -146,7 +146,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
     lparam: LPARAM,
 ) -> LRESULT {
     if !G_MAP.lock().unwrap().as_ref().unwrap().contains_key(&hwnd) {
-        println!("Warning: HWND Not Found in G_MAP.");
+        // Cannot guarantee that the window is registered with the global map before calling this function.
         return DefWindowProcW(hwnd, msg, wparam, lparam);
     }
     match msg {
@@ -203,6 +203,7 @@ pub(crate) unsafe extern "system" fn gwndproc(
             0
         }
         WM_DESTROY => {
+            G_MAP.lock().unwrap().as_mut().unwrap().get_mut(&hwnd).unwrap().destroy();
             gmap_remove(hwnd);
             if G_MAINWINDOW.lock().unwrap().as_ref().unwrap().hwnd == hwnd {
                 PostQuitMessage(0);

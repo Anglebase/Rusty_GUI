@@ -89,6 +89,14 @@ pub enum SizeType {
 
 #[allow(unused)]
 pub trait WinProc {
+    /// This method is called when the window is created.
+    /// You can add initialization code here.
+    fn init(&mut self) {}
+    /// This method is called when the window is destroyed.
+    /// You can add cleanup code here.
+    fn destroy(&mut self) {}
+
+    /// This method is called when the window needs to be redrawn.
     fn draw(&mut self, g: &mut Graphics) {}
 
     fn button_down(&mut self, button: Button) {}

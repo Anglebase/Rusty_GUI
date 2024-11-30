@@ -14,9 +14,13 @@ impl App {
     /// Runs the main loop of the program.
     /// This function is blocking and will not return until the program is closed.
     /// It should be called at the end of the `main` function.
+    /// It should be noted that before this function is called,
+    /// you must ensure that a window has been created.
     ///
     /// # Example
     /// ```
+    /// use rusty_gui::App;
+    /// 
     /// fn main() {
     ///     //...Other initialization code...
     ///     App::run();
@@ -59,11 +63,21 @@ impl App {
     ///
     /// # Example
     /// ```
+    /// use rusty_gui::*;
+    /// 
     /// struct MyWindow {}
     /// impl WinProc for MyWindow {
-    ///     fn left_button_up(&self, window: Window) {
-    ///         App::exit(); // this will cause the program to exit.
+    ///     fn button_up(&mut self, btn: Button) {
+    ///         if let Button::Left(_) = btn  {
+    ///             App::exit(); // this will cause the program to exit.
+    ///         }
     ///     }
+    /// }
+    /// 
+    /// fn main() {
+    ///     let window = Window::new(Box::new(MyWindow {}), None);
+    ///     window.show();
+    ///     App::run();
     /// }
     ///
     /// ```
