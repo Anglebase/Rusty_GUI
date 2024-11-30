@@ -1,10 +1,15 @@
+use crate::core::*;
+use crate::p;
+use crate::s;
+use crate::App;
+use crate::WinProc;
+use winapi::shared::minwindef::*;
+use winapi::shared::windef::HWND;
+use winapi::shared::windef::RECT;
 /// This file contains the system API interaction interface based on window handle (HWND).
 /// author: Anglebase (https://github.com/Anglebase)
 /// --------------------------------------------------------------------------------------
-
 use winapi::um::winuser::*;
-use crate::core::*;
-use crate::WinProc;
 
 impl Window {
     #[allow(unused)]
@@ -70,6 +75,39 @@ impl Window {
                 0,
                 SWP_NOSIZE | SWP_NOZORDER,
             );
+        }
+    }
+
+    pub fn set_title(&self, title: &str) {
+        let h = self.hwnd as usize;
+        let title = title.to_string();
+        let task = move || unsafe {
+            SetWindowTextW(h as HWND, string_to_wchar(title.as_str()).as_ptr());
+        };
+        App::push(task);
+    }
+
+    pub fn set_enabled(&self, enabled: bool) {
+        let h = self.hwnd as usize;
+        let task = move || unsafe {
+            EnableWindow(h as HWND, if enabled { TRUE } else { FALSE });
+        };
+        App::push(task);
+    }
+
+    pub fn get_client_rect(&self) -> Rect {
+        let mut rect = RECT {
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+        };
+        unsafe {
+            GetClientRect(self.hwnd, &mut rect);
+        }
+        Rect {
+            pos: p!(rect.left, rect.top),
+            size: s!(rect.right - rect.left, rect.bottom - rect.top),
         }
     }
 }
