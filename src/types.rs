@@ -29,6 +29,30 @@ pub struct Color {
 }
 
 #[macro_export]
+macro_rules! p {
+    ($x:expr, $y:expr) => {
+        Point { x: $x, y: $y }
+    };
+}
+
+#[macro_export]
+macro_rules! s {
+    ($w:expr, $h:expr) => {
+        Size { width: $w, height: $h }
+    };
+}
+
+#[macro_export]
+macro_rules! rect {
+    ($x:expr, $y:expr, $w:expr, $h:expr) => {
+        Rect {
+            pos: p!($x, $y),
+            size: s!($w, $h),
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! rgba {
     ($r:expr, $g:expr, $b:expr, $a:expr) => {
         Color {
