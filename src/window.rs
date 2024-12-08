@@ -24,15 +24,23 @@ impl Window {
         }
     }
 
-    /// Redraw the window.
-    /// The child windows are also redrawn.
-    pub fn update(&self) {
+    /// Notify the window that it needs to be redrawn.
+    /// If `include_children` is true, the entire window and its children will be redrawn.
+    /// Otherwise, only the client area of the window will be redrawn excluding its children.
+    pub fn update(&self, include_children: bool) {
         unsafe {
             RedrawWindow(
                 self.hwnd,
                 null_mut(),
                 null_mut(),
-                RDW_INVALIDATE | RDW_UPDATENOW,
+                RDW_INVALIDATE
+                    | RDW_ERASE
+                    | RDW_UPDATENOW
+                    | if include_children {
+                        RDW_ALLCHILDREN
+                    } else {
+                        RDW_NOCHILDREN
+                    },
             );
         }
     }
