@@ -127,7 +127,7 @@ impl Font {
                 DEFAULT_CHARSET,
                 OUT_DEFAULT_PRECIS,
                 CLIP_DEFAULT_PRECIS,
-                DEFAULT_QUALITY,
+                PROOF_QUALITY,
                 DEFAULT_PITCH | FF_DONTCARE,
                 font,
             )
@@ -164,14 +164,15 @@ impl Graph {
         }
     }
     pub fn text(&self, text: &str, p: Point) {
-        let len = text.len();
+        let text = text.to_string();
+        let len = text.chars().count() as i32;
         let text = text
             .encode_utf16()
             .chain(Some(0))
             .collect::<Vec<u16>>()
             .as_ptr() as LPCWSTR;
         unsafe {
-            TextOutW(self.hdc, p.x, p.y, text, len as i32 - 1);
+            TextOutW(self.hdc, p.x, p.y, text, len);
         }
     }
 }
