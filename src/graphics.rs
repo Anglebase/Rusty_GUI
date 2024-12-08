@@ -1,43 +1,11 @@
-use crate::core::string_to_wchar;
 use std::ptr::null_mut;
 
-/// This file contains system API interactions and encapsulation based on device handles.
-/// author: Anglebase (https://github.com/Anglebase)
-/// -------------------------------------------------------------------------------------
-use crate::*;
 use winapi::{
-    shared::windef::*,
-    um::{wingdi::*, winuser::*},
+    shared::{ntdef::LPCWSTR, windef::*},
+    um::wingdi::*,
 };
 
-#[derive(Debug, Clone, Copy)]
-pub struct Color {
-    pub red: u8,
-    pub green: u8,
-    pub blue: u8,
-}
-
-#[macro_export]
-macro_rules! rgb {
-    ($r:expr, $g:expr, $b:expr $(,)?) => {
-        Color {
-            red: $r,
-            green: $g,
-            blue: $b,
-        }
-    };
-}
-
-impl Color {
-    pub const BLACK: Color = rgb! { 0, 0, 0 };
-    pub const WHITE: Color = rgb! { 255, 255, 255 };
-    pub const RED: Color = rgb! { 255, 0, 0 };
-    pub const GREEN: Color = rgb! { 0, 255, 0 };
-    pub const BLUE: Color = rgb! { 0, 0, 255 };
-    pub const YELLOW: Color = rgb! { 255, 255, 0 };
-    pub const CYAN: Color = rgb! { 0, 255, 255 };
-    pub const MAGENTA: Color = rgb! { 255, 0, 255 };
-}
+use crate::{Color, Point};
 
 pub struct Pen {
     pub(crate) hpen: HPEN,
@@ -140,6 +108,12 @@ impl Default for FontStyle {
 
 impl Font {
     pub fn new(style: FontStyle) -> Self {
+        let font = style
+            .font
+            .encode_utf16()
+            .chain(Some(0))
+            .collect::<Vec<u16>>()
+            .as_ptr() as LPCWSTR;
         let hfont = unsafe {
             CreateFontW(
                 style.size,
@@ -155,14 +129,19 @@ impl Font {
                 CLIP_DEFAULT_PRECIS,
                 DEFAULT_QUALITY,
                 DEFAULT_PITCH | FF_DONTCARE,
-                string_to_wchar(style.font.as_str()).as_ptr(),
+                font,
             )
         };
         Self { hfont }
     }
 }
 
-impl Graphics {
+#[allow(unused)]
+pub struct Graph {
+    pub(crate) hdc: HDC,
+}
+
+impl Graph {
     pub fn apply_pen(&self, pen: &Pen) {
         unsafe {
             SelectObject(self.hdc, pen.hpen as HGDIOBJ);
@@ -178,21 +157,6 @@ impl Graphics {
             SelectObject(self.hdc, font.hfont as HGDIOBJ);
         }
     }
-
-    pub fn full_clear(&mut self, window: &Window, color: Color) {
-        unsafe {
-            let mut rect = RECT {
-                left: 0,
-                top: 0,
-                right: 0,
-                bottom: 0,
-            };
-            GetClientRect(window.hwnd, &mut rect);
-            let bs = CreateSolidBrush(RGB(color.red, color.green, color.blue));
-            FillRect(self.hdc, &rect, bs);
-            DeleteObject(bs as HGDIOBJ);
-        }
-    }
     pub fn line(&self, p1: Point, p2: Point) {
         unsafe {
             MoveToEx(self.hdc, p1.x, p1.y, null_mut());
@@ -200,15 +164,14 @@ impl Graphics {
         }
     }
     pub fn text(&self, text: &str, p: Point) {
-        let s = string_to_wchar(text);
+        let len = text.len();
+        let text = text
+            .encode_utf16()
+            .chain(Some(0))
+            .collect::<Vec<u16>>()
+            .as_ptr() as LPCWSTR;
         unsafe {
-            TextOutW(
-                self.hdc,
-                p.x,
-                p.y,
-                s.as_ptr(),
-                s.len() as i32 - 1,
-            );
+            TextOutW(self.hdc, p.x, p.y, text, len as i32 - 1);
         }
     }
 }
