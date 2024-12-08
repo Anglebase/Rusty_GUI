@@ -16,20 +16,27 @@ use crate::{Graph, Rect, Window};
 /// All methods in this trait have default empty implementations.
 #[allow(unused)]
 pub trait WinProc {
-    fn create(&mut self) {}
-    fn destroy(&mut self) {}
+    /// This method is called when the window is created.
+    fn create(&mut self, this: &mut Window) {}
+    /// This method is called when the window is destroyed.
+    fn destroy(&mut self, this: &mut Window) {}
 
-    fn draw(&mut self, w: &mut Window, g: &mut Graph) {}
+    /// This method is called when the window needs to be redrawn.
+    /// `g` is the graphics device context for the window.
+    fn draw(&mut self, this: &mut Window, g: &mut Graph) {}
+    /// This method is called when any timer in the window is triggered.
+    /// `timer_id` is the ID of the timer that triggered.
+    fn timer(&mut self, this: &mut Window, timer_id: usize) {}
 
-    fn event(&mut self, w: &mut Window) {}
+    fn event(&mut self, this: &mut Window) {}
 }
 
 static mut WIN_COUNT: Mutex<u32> = Mutex::new(0);
-/// Trait `WinImpl` defines interfaces related to window interaction.
+
+/// Trait `WinImplPrivate` defines private interfaces related to window interaction.
 /// All types that implement `WinProc` will automatically implement this trait.
-/// All methods in this trait needn't be implemented by users.
 #[allow(unused)]
-pub trait WinImpl: WinProc {
+pub trait WinImplPrivate: WinProc {
     /// The window procedure function.
     /// This function should not be called directly.
     unsafe extern "system" fn winproc(
@@ -51,7 +58,8 @@ pub trait WinImpl: WinProc {
         // Handle the message
         match msg {
             WM_DESTROY => {
-                it.destroy();
+                let mut w = Window { hwnd };
+                it.destroy(&mut w);
                 // Decrement the window count.
                 let count = {
                     let mut count = WIN_COUNT.lock().unwrap();
@@ -92,6 +100,11 @@ pub trait WinImpl: WinProc {
                 it.event(&mut w);
                 return 0;
             }
+            WM_TIMER => {
+                let timer_id = wparam as usize;
+                let mut w = Window { hwnd };
+                it.timer(&mut w, timer_id);
+            }
             _ => {}
         }
         DefWindowProcW(hwnd, msg, wparam, lparam)
@@ -100,15 +113,9 @@ pub trait WinImpl: WinProc {
     /// Register the window class for the current window type.
     /// If the class has already been registered or registration fails, this function returns `false`.
     /// Otherwise, it returns `true`.
-    fn register_this() -> bool {
+    /// Note that this function should not be called directly. It is called by the `create_window` method.
+    fn register_this(class_name: LPCWSTR) -> bool {
         let hinstance = unsafe { GetModuleHandleW(null_mut()) };
-        // Get type name will be used as the class name.
-        let class_name: String = type_name::<Self>().into();
-        let class_name: LPCWSTR = class_name
-            .encode_utf16()
-            .chain(Some(0))
-            .collect::<Vec<_>>()
-            .as_ptr() as _;
         // Check if the class has already been registered.
         let mut wndclass = WNDCLASSEXW {
             cbSize: size_of::<WNDCLASSEXW>() as u32,
@@ -141,17 +148,22 @@ pub trait WinImpl: WinProc {
         }
         true
     }
-
+}
+/// Trait `WinImpl` defines interfaces related to window interaction.
+/// All types that implement `WinProc` will automatically implement this trait.
+/// All methods in this trait needn't be implemented by users.
+#[allow(unused)]
+pub trait WinImpl: WinImplPrivate {
     /// Create a window with the given title, position, size, and parent window.
     /// If parent is `None`, the window is a top-level window.
     /// Otherwise, the window is a child window.
     fn create_window(&mut self, title: &str, rect: Rect, parent: Option<&Window>) -> Window {
-        let title = title
+        let title: LPCWSTR = title
             .to_string()
             .encode_utf16()
             .chain(Some(0))
             .collect::<Vec<_>>()
-            .as_ptr() as LPCWSTR;
+            .as_ptr() as _;
         // Get the class name.
         let class_name: String = type_name::<Self>().into();
         let class_name: LPCWSTR = class_name
@@ -159,6 +171,8 @@ pub trait WinImpl: WinProc {
             .chain(Some(0))
             .collect::<Vec<_>>()
             .as_ptr() as _;
+        // Register the class.
+        Self::register_this(class_name);
         // Create the window.
         let hwnd = unsafe {
             CreateWindowExW(
@@ -189,7 +203,8 @@ pub trait WinImpl: WinProc {
             let mut count = WIN_COUNT.lock().unwrap();
             *count += 1;
         }
-        self.create();
+        let mut w = Window { hwnd };
+        self.create(&mut w);
         // Set the user data to the pointer to the `Self` object.
         unsafe {
             SetWindowLongPtrW(
@@ -202,4 +217,7 @@ pub trait WinImpl: WinProc {
     }
 }
 
-impl<T: WinProc> WinImpl for T {}
+// Automatically implement `WinImplPrivate` for all types that implement `WinProc`.
+impl<T: WinProc> WinImplPrivate for T {}
+// Automatically implement `WinImpl` for all types that implement `WinImplPrivate`.
+impl<T: WinImplPrivate> WinImpl for T {}
