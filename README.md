@@ -1,6 +1,6 @@
 # Rusty GUI
 
-This is a simple GUI library for Rust. It is still in development and is not yet ready for use.
+This is a simple GUI library for Rust.
 
 # Usage
 
@@ -8,34 +8,40 @@ To use this library, add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-rusty_gui = "0.1.0"
+rusty_gui = "0.1.1"
 ```
+
+Or run `cargo add rusty_gui` in your terminal.
 
 # Example
 
 A simple example of creating a window and showing it:
 ```rust
-use rusty_gui::*;
+use rusty_gui::*; // Import the library
 
-fn main() { 
-    struct MyWin {}
+#[derive(Clone)] // It must implement `Clone` trait
+struct MyWindow; // Define youself window struct
 
-    // `WinProc` is the interface that you need to implement to create a window.
-    // You can create a empty impl block to get started.
-    // All of its functions have default implementations (Empty implementations).
-    impl WinProc for MyWin {
-        fn draw(&mut self, g: &mut Graphics) {
-            // The window drawing uses double buffering, so the default background is black. 
-            // If you think it's harmless, you can skip adding this code.
-            g.full_clear(Color::WHITE);
-        }
+// Implement the `WinProc` trait for your window struct
+impl WinProc for MyWindow {
+    fn draw(&mut self, _: &mut rusty_gui::Window, g: &mut rusty_gui::Graph) {
+        // It will draw a text on the window at position (100, 100).
+        g.text("Hello, Rusty GUI!", p!(100, 100));
     }
+}
 
-    let window = Window::new(Box::new(MyWin {}), None);
+fn main() {
+    // Create your window by yourself window struct.
+    let window = MyWindow.create_window("My Window", rect!(200, 200, 800, 600), None);
+    // Show the window.
     window.show();
+    // Run the event loop.
     App::run();
 }
+
 ```
+
+You will see a window with the text "Hello, Rusty GUI!" at position (100, 100).
 
 # License
 
