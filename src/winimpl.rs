@@ -9,7 +9,7 @@ use winapi::{
     um::{libloaderapi::GetModuleHandleW, winuser::*},
 };
 
-use crate::events::{ArrowType, Button, Key, SizeType, Wheel};
+use crate::{debug, events::{ArrowType, Button, Key, SizeType, Wheel}, log::*};
 use crate::{Graph, Point, Rect, Size, Window};
 
 /// Trait `WinProc` defines the behavior for windows.
@@ -115,7 +115,7 @@ pub trait WinImplPrivate: WinProc {
                 };
                 // Quit the application when the last window is closed.
                 if count == 0 {
-                    println!("Quitting");
+                    debug!("Application is quitting.");
                     PostQuitMessage(0);
                 }
                 Box::from_raw(this);

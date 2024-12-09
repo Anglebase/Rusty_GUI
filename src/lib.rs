@@ -4,10 +4,12 @@ mod types;
 mod window;
 mod winimpl;
 mod events;
+mod log;
 
 pub use app::App;
 pub use graphics::*;
-pub use types::{Color, Point, Rect, Size};
+pub use types::*;
 pub use window::Window;
 pub use winimpl::{WinImpl, WinProc};
 pub use events::*;
+pub use log::*;

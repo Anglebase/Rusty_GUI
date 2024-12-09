@@ -8,6 +8,7 @@ repository = "https://github.com/Anglebase/Rusty_GUI.git"
 
 [dependencies]
 colored = "2.1.0"
+chrono = "0.4"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = [
