@@ -70,7 +70,7 @@ pub trait WinProc: Clone + 'static {
     /// This method is called when a key is released.
     fn key_up(&mut self, this: &mut Window, key: Key) {}
     /// This method is called when a character is input.
-    fn input(&mut self, this: &mut Window, text: &str) {}
+    fn input(&mut self, this: &mut Window, ch: char) {}
 
     /// This method is called when the window is resized.
     fn window_resize(&mut self, this: &mut Window, size: Size, size_type: SizeType) {}
@@ -152,7 +152,7 @@ pub trait WinImplPrivate: WinProc {
             }
             WM_KEYDOWN | WM_KEYUP => return Self::handle_key_event(it, hwnd, msg, wparam, lparam),
             WM_CHAR => {
-                let input: &str = &std::char::from_u32(wparam as u32).unwrap().to_string();
+                let input = std::char::from_u32(wparam as u32).unwrap();
                 it.input(&mut w, input);
             }
             WM_MOUSEMOVE => {
@@ -281,6 +281,7 @@ pub trait WinImplPrivate: WinProc {
         DefWindowProcW(hwnd, msg, wparam, lparam)
     }
 
+    // this function is used to convert a virtual key code to a `Key` value
     fn vk_to_key(vk: i32) -> Key {
         match vk {
             0x41..=0x5A => Key::Alpha(vk as u8 as char),
@@ -491,7 +492,7 @@ pub trait WinImpl: WinImplPrivate {
             SetWindowLongPtrW(
                 hwnd,
                 GWLP_USERDATA,
-                Box::into_raw(Box::new(Box::new(self))) as _,
+                Box::into_raw(Box::new(Box::new(self.clone()))) as _,
             )
         };
         Window { hwnd }
