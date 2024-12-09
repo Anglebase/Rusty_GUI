@@ -31,4 +31,12 @@ impl App {
             }
         }
     }
+
+    /// Notifies the application to quit.
+    /// This will cause the event loop to break then the program will to exit.
+    pub fn quit() {
+        unsafe {
+            PostQuitMessage(0);
+        }
+    }
 }
