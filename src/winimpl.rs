@@ -30,27 +30,27 @@ pub trait WinProc {
     fn timer(&mut self, this: &mut Window, timer_id: usize) {}
 
     /// This method is called when a mouse button is pressed.
-    fn button_down(&mut self, window: &mut Window, button: Button) {}
+    fn button_down(&mut self, this: &mut Window, button: Button) {}
     /// This method is called when a mouse button is released.
-    fn button_up(&mut self, window: &mut Window, button: Button) {}
+    fn button_up(&mut self, this: &mut Window, button: Button) {}
     /// This method is called when a mouse button is double-clicked.
-    fn button_dbclk(&mut self, window: &mut Window, button: Button) {}
+    fn button_dbclk(&mut self, this: &mut Window, button: Button) {}
     /// This method is called when the mouse is moved.
-    fn mouse_move(&mut self, window: &mut Window, point: Point, key: Option<Key>) {}
+    fn mouse_move(&mut self, this: &mut Window, point: Point, key: Option<Key>) {}
     /// This method is called when the mouse wheel is scrolled.
-    fn mouse_wheel(&mut self, window: &mut Window, point: Point, wheel: Wheel, key: Option<Key>) {}
+    fn mouse_wheel(&mut self, this: &mut Window, point: Point, wheel: Wheel, key: Option<Key>) {}
 
     /// This method is called when a key is pressed.
-    fn key_down(&mut self, window: &mut Window, key: Key) {}
+    fn key_down(&mut self, this: &mut Window, key: Key) {}
     /// This method is called when a key is released.
-    fn key_up(&mut self, window: &mut Window, key: Key) {}
+    fn key_up(&mut self, this: &mut Window, key: Key) {}
     /// This method is called when a character is input.
-    fn input(&mut self, window: &mut Window, text: &str) {}
+    fn input(&mut self, this: &mut Window, text: &str) {}
 
     /// This method is called when the window is resized.
-    fn window_resize(&mut self, window: &mut Window, size: Size, size_type: SizeType) {}
+    fn window_resize(&mut self, this: &mut Window, size: Size, size_type: SizeType) {}
     /// This method is called when the window is moved.
-    fn window_move(&mut self, window: &mut Window, point: Point) {}
+    fn window_move(&mut self, this: &mut Window, point: Point) {}
 }
 
 static mut WIN_COUNT: Mutex<u32> = Mutex::new(0);
