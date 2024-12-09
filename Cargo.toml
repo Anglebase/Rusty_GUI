@@ -2,6 +2,9 @@
 name = "rusty_gui"
 version = "0.1.1"
 edition = "2021"
+description = "This is a simple GUI library for Rust."
+license = "Apache-2.0"
+repository = "https://github.com/Anglebase/Rusty_GUI.git"
 
 [dependencies]
 colored = "2.1.0"
