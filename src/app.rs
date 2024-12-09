@@ -5,6 +5,7 @@ use winapi::{
     um::winuser::*,
 };
 
+/// It is used to control the lifecycle of the program.
 pub struct App {}
 
 impl App {

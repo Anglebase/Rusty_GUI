@@ -14,7 +14,32 @@ use crate::{Graph, Point, Rect, Size, Window};
 
 /// Trait `WinProc` defines the behavior for windows.
 /// You can implement this trait for your own window types.
-/// All methods in this trait have default empty implementations.
+/// You must implement `Clone` trait for your window types before implementing this trait,
+/// because some types need `Clone` trait to safely copy (such as `String`).
+/// All methods in this trait have default empty implementations, 
+/// so you don't have to implement all of them.
+/// # Note
+/// The first parameter `self` of these methods is the reference to theirselves object instance.
+/// And the second parameter `this` is the reference to the `Window` object which binds with the object instance.
+/// # Example
+/// ```
+/// use rusty_gui::*;
+/// 
+/// #[derive(Clone)]
+/// struct MyWindow;
+/// 
+/// impl WinProc for MyWindow {
+///     fn draw(&mut self, _: &mut rusty_gui::Window, g: &mut rusty_gui::Graph) {
+///         g.text("Hello, Rusty GUI!", p!(50, 50));
+///     }
+/// }
+/// 
+/// fn main() {
+///     let window = MyWindow.create_window("My Window", rect!(200, 200, 800, 600), None);
+///     window.show();
+///     App::run();
+/// }
+/// ```
 #[allow(unused)]
 pub trait WinProc: Clone + 'static {
     /// This method is called when the window is created.
@@ -476,4 +501,5 @@ pub trait WinImpl: WinImplPrivate {
 // Automatically implement `WinImplPrivate` for all types that implement `WinProc`.
 impl<T: WinProc> WinImplPrivate for T {}
 // Automatically implement `WinImpl` for all types that implement `WinImplPrivate`.
+// Fix: Some types cannot copy in safty. So we use `Clone` to require users to implement `Clone` manually.
 impl<T: WinImplPrivate> WinImpl for T {}

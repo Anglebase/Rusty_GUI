@@ -7,17 +7,19 @@ use winapi::{
 
 use crate::{p, Color, Point, Rect};
 
+/// The pen of the graphics context.
 pub struct Pen {
     pub(crate) hpen: HPEN,
 }
 impl Drop for Pen {
+    /// Drop the pen and release its resources.
     fn drop(&mut self) {
         unsafe {
             DeleteObject(self.hpen as HGDIOBJ);
         }
     }
 }
-
+/// The style of the pen.
 pub enum PenStyle {
     Solid,
     Dash,
@@ -28,6 +30,10 @@ pub enum PenStyle {
 }
 
 impl Pen {
+    /// Create a new pen with the given style, width, and color.
+    /// `ps` is the style of the pen, 
+    /// `width` is the width of the pen, 
+    /// `color` is the color of the pen.
     pub fn new(ps: PenStyle, width: i32, color: Color) -> Self {
         let ps = match ps {
             PenStyle::Solid => PS_SOLID,
@@ -43,10 +49,12 @@ impl Pen {
     }
 }
 
+/// The brush of the graphics context.
 pub struct Brush {
     pub(crate) hbrush: HBRUSH,
 }
 impl Drop for Brush {
+    /// Drop the brush and release its resources.
     fn drop(&mut self) {
         unsafe {
             DeleteObject(self.hbrush as HGDIOBJ);
@@ -54,6 +62,8 @@ impl Drop for Brush {
     }
 }
 impl Brush {
+    /// Create a new solid brush with the given color.
+    /// `color` is the color of the brush.
     pub fn new(color: Color) -> Self {
         Self {
             hbrush: unsafe { CreateSolidBrush(RGB(color.red, color.green, color.blue)) },
@@ -61,9 +71,11 @@ impl Brush {
     }
 }
 
+/// The font of the graphics context.
 pub struct Font {
     pub(crate) hfont: HFONT,
 }
+/// The enum of font weights.
 pub enum FontWeight {
     Dontcare = FW_DONTCARE as isize,
     Thin = FW_THIN as isize,
@@ -76,6 +88,7 @@ pub enum FontWeight {
     ExtraBold = FW_EXTRABOLD as isize,
     Black = FW_BLACK as isize,
 }
+/// The struct of font style.
 pub struct FontStyle {
     pub size: i32,
     pub weight: FontWeight,
@@ -86,6 +99,7 @@ pub struct FontStyle {
 }
 
 impl Drop for Font {
+    /// Drop the font and release its resources.
     fn drop(&mut self) {
         unsafe {
             DeleteObject(self.hfont as HGDIOBJ);
@@ -94,6 +108,7 @@ impl Drop for Font {
 }
 
 impl Default for FontStyle {
+    /// Create a default font style.
     fn default() -> Self {
         Self {
             size: 16,
@@ -107,6 +122,7 @@ impl Default for FontStyle {
 }
 
 impl Font {
+    /// Create a new font with the given font style.
     pub fn new(style: FontStyle) -> Self {
         let font = style
             .font
@@ -136,6 +152,7 @@ impl Font {
     }
 }
 
+/// The graphics context.
 #[allow(unused)]
 pub struct Graph {
     pub(crate) hdc: HDC,

@@ -5,6 +5,7 @@ use winapi::{
     um::winuser::*,
 };
 
+/// Window object
 pub struct Window {
     pub(crate) hwnd: HWND,
 }

@@ -1,3 +1,4 @@
+/// A 2D point with `x` and `y` coordinates
 #[allow(unused)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Point {
@@ -5,6 +6,7 @@ pub struct Point {
     pub y: i32,
 }
 
+/// A 2D size with `width` and `height` dimensions
 #[allow(unused)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Size {
@@ -12,6 +14,7 @@ pub struct Size {
     pub height: i32,
 }
 
+/// A common rectangle with a position and a size
 #[allow(unused)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Rect {
@@ -19,6 +22,7 @@ pub struct Rect {
     pub size: Size,
 }
 
+/// A color with `red`, `green`, `blue`, and `alpha` components
 #[allow(unused)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Color {
