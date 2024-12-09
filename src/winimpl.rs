@@ -16,7 +16,7 @@ use crate::{Graph, Point, Rect, Size, Window};
 /// You can implement this trait for your own window types.
 /// All methods in this trait have default empty implementations.
 #[allow(unused)]
-pub trait WinProc {
+pub trait WinProc: Clone + 'static {
     /// This method is called when the window is created.
     fn create(&mut self, this: &mut Window) {}
     /// This method is called when the window is destroyed.

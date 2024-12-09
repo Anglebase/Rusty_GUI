@@ -279,15 +279,13 @@ impl Graph {
     /// Draw text at the given position.
     /// Its font and color are determined by the current font and text color.
     pub fn text(&self, text: &str, p: Point) {
-        let text = text.to_string();
-        let len = text.chars().count() as i32;
         let text = text
+            .to_string()
             .encode_utf16()
             .chain(Some(0))
-            .collect::<Vec<u16>>()
-            .as_ptr() as LPCWSTR;
+            .collect::<Vec<u16>>();
         unsafe {
-            TextOutW(self.hdc, p.x, p.y, text, len);
+            TextOutW(self.hdc, p.x, p.y, text.as_ptr() as _, (text.len() - 1) as _);
         }
     }
 }
