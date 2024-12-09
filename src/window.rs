@@ -64,6 +64,16 @@ impl Window {
         }
     }
 
+    /// Get the title of the window.
+    pub fn title(&self) -> String {
+        let len = unsafe { GetWindowTextLengthW(self.hwnd) };
+        let mut buf = vec![0u16; len as usize + 1];
+        unsafe {
+            GetWindowTextW(self.hwnd, buf.as_mut_ptr(), len + 1);
+        }
+        String::from_utf16_lossy(&buf)
+    }
+
     /// Create a timer for the window.
     /// It will trigger the `WinProc::timer` function every `time` milliseconds.
     /// The `timer_id` is used to identify the timer.
