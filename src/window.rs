@@ -87,4 +87,20 @@ impl Window {
             true
         }
     }
+
+    /// Get the current focus window.
+    pub fn get_fouse() -> Option<Window> {
+        let hwnd = unsafe { GetFocus() };
+        if hwnd == null_mut() {
+            None
+        } else {
+            Some(Window { hwnd })
+        }
+    }
+
+    /// Check if the window has the fouse.
+    pub fn is_fouse(&self) -> bool {
+        let hwnd = unsafe { GetFocus() };
+        hwnd == self.hwnd
+    }
 }
