@@ -11,7 +11,8 @@ use winapi::{
 
 use crate::{
     debug,
-    events::{ArrowType, Button, Key, SizeType, Wheel}, warn, App,
+    events::{ArrowType, Button, Key, SizeType, Wheel},
+    info, warn, App,
 };
 use crate::{Graph, Point, Rect, Size, Window};
 
@@ -102,13 +103,7 @@ pub trait WinImplPrivate: WinProc {
             debug!("Window procedure called with unloaded pointer.");
             return DefWindowProcW(hwnd, msg, wparam, lparam);
         }
-        let it = match this.as_mut() {
-            Some(it) => it,
-            None => {
-                warn!("Window procedure called with a invalid Box pointer.");
-                return DefWindowProcW(hwnd, msg, wparam, lparam);
-            }
-        };
+        let it = this.as_mut().unwrap();
         let mut w = Window { hwnd };
         // Handle the message
         match msg {
@@ -422,6 +417,7 @@ pub trait WinImplPrivate: WinProc {
         if unsafe { GetClassInfoExW(hinstance, class_name, &mut wndclass as *mut _) != 0 } {
             return false;
         }
+        debug!("Registering window class: {}", type_name::<Self>());
         // Register the class.
         wndclass.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
         wndclass.lpfnWndProc = Some(Self::winproc);
@@ -494,6 +490,10 @@ pub trait WinImpl: WinImplPrivate {
         let mut w = Window { hwnd };
         self.create(&mut w);
         // Set the user data to the pointer to the `Self` object.
+        debug!(
+            "Loading object instance pointer for window {:?}.",
+            &self as *const _
+        );
         unsafe {
             SetWindowLongPtrW(
                 hwnd,
