@@ -508,5 +508,4 @@ pub trait WinImpl: WinImplPrivate {
 // Automatically implement `WinImplPrivate` for all types that implement `WinProc`.
 impl<T: WinProc> WinImplPrivate for T {}
 // Automatically implement `WinImpl` for all types that implement `WinImplPrivate`.
-// Fix: Some types cannot copy in safty. So we use `Clone` to require users to implement `Clone` manually.
 impl<T: WinImplPrivate> WinImpl for T {}
