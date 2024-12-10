@@ -2,10 +2,10 @@ use std::ptr::null_mut;
 
 use winapi::{
     shared::{ntdef::LPCWSTR, windef::*},
-    um::wingdi::*,
+    um::{wingdi::*, winuser::*},
 };
 
-use crate::{p, Color, Point, Rect};
+use crate::{Color, Point, Rect};
 
 /// The pen of the graphics context.
 pub struct Pen {
@@ -31,8 +31,8 @@ pub enum PenStyle {
 
 impl Pen {
     /// Create a new pen with the given style, width, and color.
-    /// `ps` is the style of the pen, 
-    /// `width` is the width of the pen, 
+    /// `ps` is the style of the pen,
+    /// `width` is the width of the pen,
     /// `color` is the color of the pen.
     pub fn new(ps: PenStyle, width: i32, color: Color) -> Self {
         let ps = match ps {
@@ -76,26 +76,61 @@ pub struct Font {
     pub(crate) hfont: HFONT,
 }
 /// The enum of font weights.
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum FontWeight {
-    Dontcare = FW_DONTCARE as isize,
-    Thin = FW_THIN as isize,
-    ExtraLight = FW_EXTRALIGHT as isize,
-    Light = FW_LIGHT as isize,
-    Normal = FW_NORMAL as isize,
-    Medium = FW_MEDIUM as isize,
-    SemiBold = FW_SEMIBOLD as isize,
-    Bold = FW_BOLD as isize,
-    ExtraBold = FW_EXTRABOLD as isize,
-    Black = FW_BLACK as isize,
+    Dontcare = FW_DONTCARE as isize,     // Use the default weight.
+    Thin = FW_THIN as isize,             // Thin font weight.
+    ExtraLight = FW_EXTRALIGHT as isize, // Extra light font weight.
+    Light = FW_LIGHT as isize,           // Light font weight.
+    Normal = FW_NORMAL as isize,         // Normal font weight.
+    Medium = FW_MEDIUM as isize,         // Medium font weight.
+    SemiBold = FW_SEMIBOLD as isize,     // Semi-bold font weight.
+    Bold = FW_BOLD as isize,             // Bold font weight.
+    ExtraBold = FW_EXTRABOLD as isize,   // Extra bold font weight.
+    Black = FW_BLACK as isize,           // Black font weight.
 }
 /// The struct of font style.
+#[derive(Clone)]
 pub struct FontStyle {
-    pub size: i32,
-    pub weight: FontWeight,
-    pub italic: bool,
-    pub underline: bool,
-    pub strikeout: bool,
-    pub font: String,
+    pub size: i32,          // The size of the font.
+    pub weight: FontWeight, // The weight of the font.
+    pub italic: bool,       // The italic status of the font.
+    pub underline: bool,    // The underline status of the font.
+    pub strikeout: bool,    // The strikeout status of the font.
+    pub fontfamily: String, // The font family of the font.
+}
+
+impl FontStyle {
+    /// Set the font family for the font style.
+    pub fn set_fontfamily(&mut self, family: &str) -> Self {
+        self.fontfamily = family.to_string();
+        self.clone()
+    }
+    /// Set the font size for the font style.
+    pub fn set_size(&mut self, size: i32) -> Self {
+        self.size = size;
+        self.clone()
+    }
+    /// Set the font weight type for the font style.
+    pub fn set_weight(&mut self, weight: FontWeight) -> Self {
+        self.weight = weight;
+        self.clone()
+    }
+    /// Set the font italic status for the font style.
+    pub fn set_italic(&mut self, italic: bool) -> Self {
+        self.italic = italic;
+        self.clone()
+    }
+    /// Set the font underline status for the font style.
+    pub fn set_underline(&mut self, underline: bool) -> Self {
+        self.underline = underline;
+        self.clone()
+    }
+    /// Set the font strikeout status for the font style.
+    pub fn set_strikeout(&mut self, strikeout: bool) -> Self {
+        self.strikeout = strikeout;
+        self.clone()
+    }
 }
 
 impl Drop for Font {
@@ -116,16 +151,16 @@ impl Default for FontStyle {
             italic: false,
             underline: false,
             strikeout: false,
-            font: String::from("宋体"),
+            fontfamily: String::from("宋体"),
         }
     }
 }
 
 impl Font {
     /// Create a new font with the given font style.
-    pub fn new(style: FontStyle) -> Self {
+    pub fn new(style: &FontStyle) -> Self {
         let font = style
-            .font
+            .fontfamily
             .encode_utf16()
             .chain(Some(0))
             .collect::<Vec<u16>>()
@@ -152,30 +187,55 @@ impl Font {
     }
 }
 
+pub struct TextAlign;
+type TextAligns = u32;
+impl TextAlign {
+    pub const BASELINE: u32 = TA_BASELINE; // Align the point to the baseline of the text.
+    pub const LEFT: u32 = TA_LEFT; // Align the point to the left of the text.
+    pub const CENTER: u32 = TA_CENTER; // Align the point to the center of the text.
+    pub const RIGHT: u32 = TA_RIGHT; // Align the point to the right of the text.
+    pub const TOP: u32 = TA_TOP; // Align the point to the top of the text.
+    pub const BOTTOM: u32 = TA_BOTTOM; // Align the point to the bottom of the text.
+}
+pub struct TextFomat;
+type TextFormats = u32;
+impl TextFomat {
+    pub const BOTTOM: u32 = DT_BOTTOM; // Bottom alignment.
+    pub const VCENTER: u32 = DT_VCENTER; // Vertical Center alignment.
+    pub const TOP: u32 = DT_TOP; // Top alignment.
+    pub const LEFT: u32 = DT_LEFT; // Left alignment.
+    pub const CENTER: u32 = DT_CENTER; // Horizontal Center alignment.
+    pub const RIGHT: u32 = DT_RIGHT; // Right alignment.
+
+    pub const END_ELLIPSIS: u32 = DT_END_ELLIPSIS; // End ellipsis.
+    pub const MIDDLE_ELLIPSIS: u32 = DT_PATH_ELLIPSIS; // Middle ellipsis.
+
+    pub const SINGLE_LINE: u32 = DT_SINGLELINE; // Single line.
+}
+
 /// The graphics context.
-#[allow(unused)]
 pub struct Graph {
     pub(crate) hdc: HDC,
 }
 
 impl Graph {
     /// Apply a pen for the graphics context.
-    pub fn apply_pen(&self, pen: &Pen) {
-        unsafe {
-            SelectObject(self.hdc, pen.hpen as HGDIOBJ);
-        }
+    /// Return a Pen object that can be used to restore the previous pen.
+    pub fn apply_pen(&self, pen: &Pen) -> Pen {
+        let hpen = unsafe { SelectObject(self.hdc, pen.hpen as HGDIOBJ) } as HPEN;
+        Pen { hpen }
     }
     /// Apply a brush for the graphics context.
-    pub fn apply_brush(&self, brush: &Brush) {
-        unsafe {
-            SelectObject(self.hdc, brush.hbrush as HGDIOBJ);
-        }
+    /// Return a Brush object that can be used to restore the previous brush.
+    pub fn apply_brush(&self, brush: &Brush) -> Brush {
+        let hbrush = unsafe { SelectObject(self.hdc, brush.hbrush as HGDIOBJ) } as HBRUSH;
+        Brush { hbrush }
     }
     /// Apply a font for the graphics context.
-    pub fn apply_font(&self, font: &Font) {
-        unsafe {
-            SelectObject(self.hdc, font.hfont as HGDIOBJ);
-        }
+    /// Return a Font object that can be used to restore the previous font.
+    pub fn apply_font(&self, font: &Font) -> Font {
+        let hfont = unsafe { SelectObject(self.hdc, font.hfont as HGDIOBJ) } as HFONT;
+        Font { hfont }
     }
     /// Set the text color for the graphics context.
     pub fn set_text_color(&self, color: Color) {
@@ -202,6 +262,14 @@ impl Graph {
                     OPAQUE as i32
                 },
             );
+        }
+    }
+
+    /// Set the text alignment for the graphics context.
+    /// It will affect the position of the reference point for text drawing.
+    pub fn set_textalign(&self, align: TextAligns) {
+        unsafe {
+            SetTextAlign(self.hdc, align);
         }
     }
 
@@ -234,25 +302,47 @@ impl Graph {
             );
         }
     }
+
+    /// Draw a pie with the given arguments.
+    /// Its style is determined by the current pen.
+    /// Parameter `pos` is the center of the pie,
+    /// `xr` and `yr` are the x direction and y direction radii of the pie,
+    /// `start` and `end` are the start and end angles of the pie in radians.
+    /// The angles are measured from the x-axis(horizontal direction) in a counter-clockwise direction.
     pub fn pie(&self, pos: Point, xr: i32, yr: i32, start: f64, end: f64) {
-        self.arc(pos, xr, yr, start, end);
-        let p1 = p!(
-            pos.x + (xr as f64 * start.cos()) as i32,
-            pos.y - (yr as f64 * start.sin()) as i32
-        );
-        let p2 = p!(
-            pos.x + (xr as f64 * end.cos()) as i32,
-            pos.y - (yr as f64 * end.sin()) as i32
-        );
-        self.line(pos, p1);
-        self.line(pos, p2);
+        unsafe {
+            MoveToEx(self.hdc, pos.x, pos.y, null_mut());
+            ArcTo(
+                self.hdc,
+                pos.x - xr,
+                pos.y - yr,
+                pos.x + xr,
+                pos.y + yr,
+                pos.x + (xr as f64 * start.cos()) as i32,
+                pos.y - (yr as f64 * start.sin()) as i32,
+                pos.x + (xr as f64 * end.cos()) as i32,
+                pos.y - (yr as f64 * end.sin()) as i32,
+            );
+            LineTo(self.hdc, pos.x, pos.y);
+        }
     }
+
+    /// Draw an ellipse with the given arguments.
+    /// Its style is determined by the current pen.
+    /// Parameter `pos` is the center of the ellipse,
+    /// `xr` and `yr` are the x direction and y direction radii of the ellipse.
     pub fn ellipse(&self, pos: Point, xr: i32, yr: i32) {
         self.arc(pos, xr, yr, 0.0, 0.0);
     }
+
+    /// Draw a circle with the given arguments.
+    /// Its style is determined by the current pen.
+    /// Parameter `pos` is the center of the circle,
+    /// `r` is the radius of the circle.
     pub fn circle(&self, pos: Point, r: i32) {
         self.ellipse(pos, r, r);
     }
+
     /// Draw a rectangle wireframe.
     /// Its style is determined by the current pen.
     pub fn rect(&self, rect: Rect) {
@@ -274,6 +364,7 @@ impl Graph {
         self.line(rb, lb);
         self.line(lb, lt);
     }
+
     /// Draw a filled rectangle.
     /// Its outline style is determined by the current pen,
     /// and its fill style is determined by the current brush.
@@ -288,21 +379,84 @@ impl Graph {
             );
         }
     }
-    pub fn fill_ellipse(&self, pos: Point, xr: i32, yr: i32) {
+
+    /// Draw a filled pie with the given arguments.
+    /// Its style is determined by the current brush.
+    /// Parameter `pos` is the center of the pie,
+    /// `xr` and `yr` are the x direction and y direction radii of the pie,
+    /// `start` and `end` are the start and end angles of the pie in radians.
+    /// The angles are measured from the x-axis(horizontal direction) in a counter-clockwise direction.
+    pub fn fillpie(&self, pos: Point, xr: i32, yr: i32, start: f64, end: f64) {
+        unsafe {
+            Pie(
+                self.hdc,
+                pos.x - xr,
+                pos.y - yr,
+                pos.x + xr,
+                pos.y + yr,
+                pos.x + (xr as f64 * start.cos()) as i32,
+                pos.y - (yr as f64 * start.sin()) as i32,
+                pos.x + (xr as f64 * end.cos()) as i32,
+                pos.y - (yr as f64 * end.sin()) as i32,
+            );
+        }
+    }
+
+    /// Draw a filled ellipse with the given arguments.
+    /// Its style is determined by the current brush.
+    /// Parameter `pos` is the center of the ellipse,
+    /// `xr` and `yr` are the x direction and y direction radii of the ellipse.
+    pub fn fillellipse(&self, pos: Point, xr: i32, yr: i32) {
         unsafe {
             Ellipse(self.hdc, pos.x - xr, pos.y - yr, pos.x + xr, pos.y + yr);
         }
     }
+
+    /// Draw a filled circle with the given arguments.
+    /// Its style is determined by the current brush.
+    /// Parameter `pos` is the center of the circle,
+    /// `r` is the radius of the circle.
+    pub fn fillcircle(&self, pos: Point, r: i32) {
+        self.fillellipse(pos, r, r);
+    }
+
     /// Draw text at the given position.
     /// Its font and color are determined by the current font and text color.
-    pub fn text(&self, text: &str, p: Point) {
+    pub fn xytext(&self, text: &str, p: Point) {
         let text = text
             .to_string()
             .encode_utf16()
             .chain(Some(0))
             .collect::<Vec<u16>>();
         unsafe {
-            TextOutW(self.hdc, p.x, p.y, text.as_ptr() as _, (text.len() - 1) as _);
+            TextOutW(
+                self.hdc,
+                p.x,
+                p.y,
+                text.as_ptr() as _,
+                (text.len() - 1) as _,
+            );
+        }
+    }
+
+    /// Draw text within the given rectangle.
+    /// Its font and color are determined by the current font and text color.
+    /// The text will be aligned according to the given format.
+    pub fn recttext(&self, rect: Rect, text: &str, format: TextFormats) {
+        let text = text
+            .to_string()
+            .encode_utf16()
+            .chain(Some(0))
+            .collect::<Vec<u16>>();
+        let len = text.len() - 1;
+        let mut rect = RECT {
+            left: rect.pos.x,
+            top: rect.pos.y,
+            right: rect.pos.x + rect.size.width,
+            bottom: rect.pos.y + rect.size.height,
+        };
+        unsafe {
+            DrawTextW(self.hdc, text.as_ptr() as _, len as i32, &mut rect, format);
         }
     }
 }
