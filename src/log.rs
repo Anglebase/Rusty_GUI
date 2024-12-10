@@ -17,38 +17,74 @@ static mut LOG_LEVEL: Mutex<LogLevel> = Mutex::new(LogLevel::Info);
 
 /// Output a debug message
 #[macro_export]
+#[cfg(feature = "log_enabled")]
 macro_rules! debug {
     ($($arg:tt)*) => {
-        log(LogLevel::Debug, &format!($($arg)*))
+        crate::log(crate::LogLevel::Debug, &format!($($arg)*))
     };
 }
 /// Output an info message
 #[macro_export]
+#[cfg(feature = "log_enabled")]
 macro_rules! info {
     ($($arg:tt)*) => {
-        log(LogLevel::Info, &format!($($arg)*))
+        crate::log(crate::LogLevel::Info, &format!($($arg)*))
     };
 }
 /// Output a warning message
 #[macro_export]
+#[cfg(feature = "log_enabled")]
 macro_rules! warn {
     ($($arg:tt)*) => {
-        log(LogLevel::Warn, &format!($($arg)*))
+        crate::log(crate::LogLevel::Warn, &format!($($arg)*))
     };
 }
 /// Output an error message
 #[macro_export]
+#[cfg(feature = "log_enabled")]
 macro_rules! error {
     ($($arg:tt)*) => {
-        log(LogLevel::Error, &format!($($arg)*))
+        crate::log(crate::LogLevel::Error, &format!($($arg)*))
     };
 }
 /// Output a fatal message.
 #[macro_export]
+#[cfg(feature = "log_enabled")]
 macro_rules! fatal {
     ($($arg:tt)*) => {
-        log(LogLevel::Fatal, &format!($($arg)*))
+        crate::log(crate::LogLevel::Fatal, &format!($($arg)*))
     };
+}
+
+/// Output a debug message
+#[macro_export]
+#[cfg(feature = "log_disabled")]
+macro_rules! debug {
+    ($($arg:tt)*) => {};
+}
+/// Output an info message
+#[macro_export]
+#[cfg(feature = "log_disabled")]
+macro_rules! info {
+    ($($arg:tt)*) => {};
+}
+/// Output a warning message
+#[macro_export]
+#[cfg(feature = "log_disabled")]
+macro_rules! warn {
+    ($($arg:tt)*) => {};
+}
+/// Output an error message
+#[macro_export]
+#[cfg(feature = "log_disabled")]
+macro_rules! error {
+    ($($arg:tt)*) => {};
+}
+/// Output a fatal message.
+#[macro_export]
+#[cfg(feature = "log_disabled")]
+macro_rules! fatal {
+    ($($arg:tt)*) => {};
 }
 
 /// Set the log level.

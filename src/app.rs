@@ -5,6 +5,8 @@ use winapi::{
     um::winuser::*,
 };
 
+use crate::debug;
+
 /// It is used to control the lifecycle of the program.
 pub struct App {}
 
@@ -38,6 +40,7 @@ impl App {
     pub fn quit() {
         unsafe {
             PostQuitMessage(0);
+            debug!("Quitting the application...");
         }
     }
 }

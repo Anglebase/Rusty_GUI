@@ -9,14 +9,17 @@ use winapi::{
     um::{libloaderapi::GetModuleHandleW, winuser::*},
 };
 
-use crate::{debug, events::{ArrowType, Button, Key, SizeType, Wheel}, log::*};
+use crate::{
+    debug,
+    events::{ArrowType, Button, Key, SizeType, Wheel}, warn, App,
+};
 use crate::{Graph, Point, Rect, Size, Window};
 
 /// Trait `WinProc` defines the behavior for windows.
 /// You can implement this trait for your own window types.
 /// You must implement `Clone` trait for your window types before implementing this trait,
 /// because some types need `Clone` trait to safely copy (such as `String`).
-/// All methods in this trait have default empty implementations, 
+/// All methods in this trait have default empty implementations,
 /// so you don't have to implement all of them.
 /// # Note
 /// The first parameter `self` of these methods is the reference to theirselves object instance.
@@ -24,16 +27,16 @@ use crate::{Graph, Point, Rect, Size, Window};
 /// # Example
 /// ```
 /// use rusty_gui::*;
-/// 
+///
 /// #[derive(Clone)]
 /// struct MyWindow;
-/// 
+///
 /// impl WinProc for MyWindow {
 ///     fn draw(&mut self, _: &mut rusty_gui::Window, g: &mut rusty_gui::Graph) {
 ///         g.text("Hello, Rusty GUI!", p!(50, 50));
 ///     }
 /// }
-/// 
+///
 /// fn main() {
 ///     let window = MyWindow.create_window("My Window", rect!(200, 200, 800, 600), None);
 ///     window.show();
@@ -96,11 +99,15 @@ pub trait WinImplPrivate: WinProc {
         let this = GetWindowLongPtrW(hwnd, GWLP_USERDATA);
         let this = this as *mut Box<Self>;
         if this.is_null() {
+            debug!("Window procedure called with unloaded pointer.");
             return DefWindowProcW(hwnd, msg, wparam, lparam);
         }
         let it = match this.as_mut() {
             Some(it) => it,
-            None => return DefWindowProcW(hwnd, msg, wparam, lparam),
+            None => {
+                warn!("Window procedure called with a invalid Box pointer.");
+                return DefWindowProcW(hwnd, msg, wparam, lparam);
+            }
         };
         let mut w = Window { hwnd };
         // Handle the message
@@ -115,8 +122,7 @@ pub trait WinImplPrivate: WinProc {
                 };
                 // Quit the application when the last window is closed.
                 if count == 0 {
-                    debug!("Application is quitting.");
-                    PostQuitMessage(0);
+                    App::quit();
                 }
                 Box::from_raw(this);
                 return 0;

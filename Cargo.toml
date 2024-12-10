@@ -18,3 +18,8 @@ winapi = { version = "0.3", features = [
     "errhandlingapi",
     "processthreadsapi",
 ] }
+
+[features]
+default = ['log_enabled']
+log_enabled = []
+log_disabled = []
