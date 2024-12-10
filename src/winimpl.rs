@@ -12,7 +12,7 @@ use winapi::{
 use crate::{
     debug,
     events::{ArrowType, Button, Key, SizeType, Wheel},
-    info, warn, App,
+    App,
 };
 use crate::{Graph, Point, Rect, Size, Window};
 
