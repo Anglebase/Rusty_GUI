@@ -34,7 +34,7 @@ use crate::{Graph, Point, Rect, Size, Window};
 ///
 /// impl WinProc for MyWindow {
 ///     fn draw(&mut self, _: &mut rusty_gui::Window, g: &mut rusty_gui::Graph) {
-///         g.text("Hello, Rusty GUI!", p!(50, 50));
+///         g.xytext("Hello, Rusty GUI!", p!(50, 50));
 ///     }
 /// }
 ///
