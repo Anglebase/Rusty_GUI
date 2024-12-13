@@ -5,6 +5,7 @@ mod window;
 mod winimpl;
 mod events;
 mod log;
+mod core;
 
 pub use app::App;
 pub use graphics::*;
@@ -13,3 +14,4 @@ pub use window::Window;
 pub use winimpl::{WinImpl, WinProc};
 pub use events::*;
 pub use log::*;
+pub use core::*;

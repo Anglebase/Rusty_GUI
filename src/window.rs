@@ -1,9 +1,14 @@
 use std::ptr::null_mut;
 
 use winapi::{
-    shared::{ntdef::LPCWSTR, windef::HWND},
+    shared::{
+        ntdef::LPCWSTR,
+        windef::{HWND, RECT},
+    },
     um::winuser::*,
 };
+
+use crate::{rect, Point, Rect, Size};
 
 /// Window object
 pub struct Window {
@@ -11,6 +16,74 @@ pub struct Window {
 }
 
 impl Window {
+    /// Get the rect of the window client area.
+    pub fn rect(&self) -> Rect {
+        let mut rect = RECT {
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+        };
+        unsafe {
+            GetClientRect(self.hwnd, &mut rect);
+        }
+        rect!(
+            rect.left,
+            rect.top,
+            rect.right - rect.left,
+            rect.bottom - rect.top
+        )
+    }
+
+    /// Get the rect of the window including its non-client area.
+    pub fn outrect(&self) -> Rect {
+        let mut rect = RECT {
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+        };
+        unsafe {
+            GetWindowRect(self.hwnd, &mut rect);
+        }
+        rect!(
+            rect.left,
+            rect.top,
+            rect.right - rect.left,
+            rect.bottom - rect.top
+        )
+    }
+
+    /// Set the rect of the window client area.
+    pub fn resize(&self, size: Size) {
+        unsafe {
+            SetWindowPos(
+                self.hwnd,
+                null_mut(),
+                0,
+                0,
+                size.width,
+                size.height,
+                SWP_NOMOVE | SWP_NOZORDER,
+            );
+        }
+    }
+
+    /// Move the window to the given position.
+    pub fn move_to(&self, pos: Point) {
+        unsafe {
+            SetWindowPos(
+                self.hwnd,
+                null_mut(),
+                pos.x,
+                pos.y,
+                0,
+                0,
+                SWP_NOSIZE | SWP_NOZORDER,
+            );
+        }
+    }
+
     /// Show the window and update it.
     pub fn show(&self) {
         unsafe {
@@ -112,5 +185,16 @@ impl Window {
     pub fn is_fouse(&self) -> bool {
         let hwnd = unsafe { GetFocus() };
         hwnd == self.hwnd
+    }
+
+    pub fn get_object<T>(&self) -> &'static mut T {
+        // Get the pointer to the `Self` object
+        let this = unsafe { GetWindowLongPtrW(self.hwnd, GWLP_USERDATA) };
+        let this = this as *mut Box<T>;
+        if this.is_null() {
+            panic!("Failed to get instance of window");
+        }
+        let it = unsafe { &mut *this };
+        it
     }
 }

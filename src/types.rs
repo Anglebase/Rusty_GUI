@@ -36,7 +36,7 @@ pub struct Color {
 #[macro_export]
 macro_rules! p {
     ($x:expr, $y:expr) => {
-        Point { x: $x, y: $y }
+        crate::Point { x: $x, y: $y }
     };
 }
 
@@ -44,7 +44,7 @@ macro_rules! p {
 #[macro_export]
 macro_rules! s {
     ($w:expr, $h:expr) => {
-        Size { width: $w, height: $h }
+        crate::Size { width: $w, height: $h }
     };
 }
 
@@ -53,8 +53,8 @@ macro_rules! s {
 macro_rules! rect {
     ($x:expr, $y:expr, $w:expr, $h:expr) => {
         Rect {
-            pos: p!($x, $y),
-            size: s!($w, $h),
+            pos: crate::p!($x, $y),
+            size: crate::s!($w, $h),
         }
     };
 }

@@ -210,7 +210,9 @@ impl TextFomat {
     pub const END_ELLIPSIS: u32 = DT_END_ELLIPSIS; // End ellipsis.
     pub const MIDDLE_ELLIPSIS: u32 = DT_PATH_ELLIPSIS; // Middle ellipsis.
 
-    pub const SINGLE_LINE: u32 = DT_SINGLELINE; // Single line.
+    pub const SINGLE_LINE: u32 = DT_SINGLELINE; // Single line.\
+
+    pub const ATCENTER: u32 = DT_CENTER | DT_VCENTER | DT_SINGLELINE; // Center alignment.
 }
 
 /// The graphics context.
