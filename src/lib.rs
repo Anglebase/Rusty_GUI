@@ -1,17 +1,16 @@
-mod app;
-mod graphics;
-mod types;
-mod window;
-mod winimpl;
-mod events;
-mod log;
 mod core;
+mod syslayer;
+mod types;
+mod utils;
+mod widgets;
 
-pub use app::App;
-pub use graphics::*;
-pub use types::*;
-pub use window::Window;
-pub use winimpl::{WinImpl, WinProc};
-pub use events::*;
-pub use log::*;
+pub use syslayer::*;
+
 pub use core::*;
+pub use types::*;
+pub use utils::*;
+pub use widgets::*;
+
+pub fn exec() {
+    event_loop();
+}

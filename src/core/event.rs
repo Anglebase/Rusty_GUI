@@ -1,35 +1,28 @@
 use crate::Point;
+use crate::Size;
 
-/// The enum of Button
-/// The point coordinates in the enumeration are used to indicate the mouse coordinates at the time of the event.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Button {
-    Left(Point),   // Left mouse button with the point coordinates
-    Right(Point),  // Right mouse button with the point coordinates
-    Middle(Point), // Middle mouse button with the point coordinates
+pub enum Event {
+    KeyPressed { key: KeyCode },
+    KeyReleased { key: KeyCode },
+
+    MouseMoved { pos: Point },
+    MouseButtonPressed { button: MouseButton, pos: Point },
+    MouseButtonReleased { button: MouseButton, pos: Point },
+    MouseWheelScrolled { wheel: MouseWheel, pos: Point },
+
+    WindowCreated,
+    WindowDestroyed,
+    WindowResized { size: Size },
+    WindowMoved { pos: Point },
+    WindowClosed,
+    WindowMinimized,
+    WindowMaximized,
+    WindowRestored,
 }
 
-/// The enum of Wheel
-/// The i16 value in the enumeration is used to indicate the number of clicks of the mouse wheel.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Wheel {
-    Up(i16),   // Mouse wheel up with the number of clicks
-    Down(i16), // Mouse wheel down with the number of clicks
-    None,      // No mouse wheel event
-}
-
-/// The enum of directional keys
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ArrowType {
-    Left,  // Left arrow key
-    Right, // Right arrow key
-    Up,    // Up arrow key
-    Down,  // Down arrow key
-}
-
-/// The enum of keys
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Key {
+pub enum KeyCode {
     Alpha(char), // A-Z
     N(char),     // 0-9
     F(u8),       // F1-F12
@@ -76,19 +69,24 @@ pub enum Key {
     X1Button,     // mouse extension button 1
     X2Button,     // mouse extension button 2
 
-    Arrow(ArrowType), // Arrow keys
+    Left,  // Left arrow
+    Right, // Right arrow
+    Up,    // Up arrow
+    Down,  // Down arrow
 
     Unknown(i32), // Other keys
 }
 
-/// The enum of window size events
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum SizeType {
-    Maximized, // Window is maximized
-    Minimized, // Window is minimized
-    Restored,  // Window is restored from minimized or maximized state
-    MaxHide,   // Window is maximized and hidden from taskbar
-    MaxShow,   // Window is maximized and shown in taskbar
+pub enum MouseButton {
+    Left,
+    Right,
+    Middle,
+    Other(u16),
+}
 
-    Unknown, // Unknown size type
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MouseWheel {
+    Up,
+    Down,
 }

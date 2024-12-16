@@ -1,6 +1,6 @@
 [package]
 name = "rusty_gui"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "This is a simple GUI library for Rust."
 license = "Apache-2.0"
@@ -10,8 +10,7 @@ repository = "https://github.com/Anglebase/Rusty_GUI.git"
 cargo-args = ["--no-deps"]
 
 [dependencies]
-colored = "2.1.0"
-chrono = "0.4"
+
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = [
@@ -21,8 +20,3 @@ winapi = { version = "0.3", features = [
     "errhandlingapi",
     "processthreadsapi",
 ] }
-
-[features]
-default = ['log_enabled']
-log_enabled = []
-log_disabled = []
