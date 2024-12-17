@@ -202,6 +202,18 @@ impl BitOr for Rect {
     }
 }
 
+impl Into<(i32, i32, i32, i32)> for Rect {
+    fn into(self) -> (i32, i32, i32, i32) {
+        (self.pos.x, self.pos.y, self.size.width, self.size.height)
+    }
+}
+
+impl From<(i32, i32, i32, i32)> for Rect {
+    fn from(value: (i32, i32, i32, i32)) -> Self {
+        rect!(value.0, value.1, value.2, value.3)
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Color {
     pub red: u8,

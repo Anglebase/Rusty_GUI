@@ -10,7 +10,3 @@ pub use core::*;
 pub use types::*;
 pub use utils::*;
 pub use widgets::*;
-
-pub fn exec() {
-    event_loop();
-}

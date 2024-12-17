@@ -65,3 +65,10 @@ pub fn new_brush_object(param: BrushParam) -> *mut c_void {
         }
     }
 }
+
+pub fn draw_line(hdc: *mut c_void, x1: i32, y1: i32, x2: i32, y2: i32) {
+    unsafe {
+        MoveToEx(hdc as _, x1, y1, std::ptr::null_mut());
+        LineTo(hdc as _, x2, y2);
+    }
+}

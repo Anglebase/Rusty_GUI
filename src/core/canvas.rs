@@ -1,8 +1,8 @@
 use std::os::raw::c_void;
 
 use crate::{
-    clear_device, delete_object, new_brush_object, new_pen_object, select_object, BrushParam,
-    Color, PenParam, Rect,
+    clear_device, delete_object, draw_line, new_brush_object, new_pen_object, select_object,
+    BrushParam, Color, PenParam, Rect,
 };
 
 pub enum PenStyle {
@@ -78,5 +78,23 @@ impl Canvas {
         Brush {
             hbrush: select_object(self.hdc, brush.hbrush) as *mut c_void,
         }
+    }
+
+    pub fn set_font(&self, font: &Font) -> Font {
+        Font {
+            hfont: select_object(self.hdc, font.hfont) as *mut c_void,
+        }
+    }
+
+    pub fn line(&self, x1: i32, y1: i32, x2: i32, y2: i32) {
+        draw_line(self.hdc, x1, y1, x2, y2);
+    }
+
+    pub fn rect(&self, rect: Rect) {
+        let (x, y, w, h) = rect.into();
+        self.line(x, y, x + w, y);
+        self.line(x + w, y, x + w, y + h);
+        self.line(x + w, y + h, x, y + h);
+        self.line(x, y + h, x, y);
     }
 }
