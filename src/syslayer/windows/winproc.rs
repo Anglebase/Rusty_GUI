@@ -8,7 +8,7 @@ use winapi::{
     um::winuser::*,
 };
 
-use crate::{pos, Canvas, Ele, Event, ModifierKey, MouseButton, MouseWheel};
+use crate::*;
 
 use super::{get_rect, notifier_exit};
 
@@ -34,6 +34,14 @@ macro_rules! lparam_to_pos {
         let x = $lparam as i32 & 0xffff;
         let y = ($lparam >> 16) as i32 & 0xffff;
         pos!(x, y)
+    }};
+}
+
+macro_rules! lparam_to_size {
+    ($lparam:expr) => {{
+        let width = $lparam as i32 & 0xffff;
+        let height = ($lparam >> 16) as i32 & 0xffff;
+        size!(width, height)
     }};
 }
 
@@ -76,6 +84,7 @@ pub(super) unsafe extern "system" fn winproc(
                     notifier_exit(0);
                 }
             }
+            return 0;
         }
         WM_PAINT => {
             let mut ps = PAINTSTRUCT {
@@ -98,17 +107,20 @@ pub(super) unsafe extern "system" fn winproc(
             };
             obj.draw(&mut canvas);
             EndPaint(hwnd, &ps);
+            return 0;
         }
         WM_LBUTTONDOWN | WM_RBUTTONDOWN | WM_MBUTTONDOWN | WM_XBUTTONDOWN | WM_LBUTTONUP
         | WM_RBUTTONUP | WM_MBUTTONUP | WM_XBUTTONUP | WM_LBUTTONDBLCLK | WM_RBUTTONDBLCLK
         | WM_MBUTTONDBLCLK | WM_XBUTTONDBLCLK => {
             handle_mouse_event(obj, msg, wparam, lparam);
+            return 0;
         }
         WM_MOUSEMOVE => {
             let pos = lparam_to_pos!(lparam);
             let mk = wparam_to_mkey!(wparam & 0xffff);
             let event = Event::MouseMoved { pos, mk };
             obj.on_event(&event);
+            return 0;
         }
         WM_MOUSEWHEEL => {
             let pos = lparam_to_pos!(lparam);
@@ -124,6 +136,52 @@ pub(super) unsafe extern "system" fn winproc(
                 mk,
             };
             obj.on_event(&event);
+            return 0;
+        }
+        WM_SIZE => {
+            let size = lparam_to_size!(lparam);
+            let ty = match wparam {
+                SIZE_MAXIMIZED => WindowSize::Maximize,
+                SIZE_MINIMIZED => WindowSize::Minimize,
+                SIZE_RESTORED => WindowSize::Restore,
+                SIZE_MAXHIDE => WindowSize::MaxHide,
+                SIZE_MAXSHOW => WindowSize::MaxShow,
+                _ => WindowSize::Resize,
+            };
+            let event = Event::WindowResized { size, ty };
+            obj.on_event(&event);
+            return 0;
+        }
+        WM_MOVE => {
+            let pos = lparam_to_pos!(lparam);
+            let event = Event::WindowMoved { pos };
+            obj.on_event(&event);
+            return 0;
+        }
+        WM_KEYDOWN | WM_KEYUP | WM_SYSKEYDOWN | WM_SYSKEYUP => {
+            handle_key_event(obj, msg, wparam);
+            return 0;
+        }
+        WM_CHAR => {
+            let ch: char = std::char::from_u32(wparam as u32).unwrap();
+            let event = Event::Input { ch };
+            obj.on_event(&event);
+            return 0;
+        }
+        WM_HOTKEY => {
+            let mod_key = lparam & 0xffff;
+            let vk = (lparam >> 16) & 0xffff;
+            let mut hflags = HotKeyFlags::default();
+            hflags.alt = (mod_key & MOD_ALT) != 0;
+            hflags.ctrl = (mod_key & MOD_CONTROL) != 0;
+            hflags.shift = (mod_key & MOD_SHIFT) != 0;
+            hflags.win = (mod_key & MOD_WIN) != 0;
+            let event = Event::HotKey {
+                key: vk_to_key(vk as _),
+                modifiers: hflags,
+            };
+            obj.on_event(&event);
+            return 0;
         }
         _ => {}
     };
@@ -158,6 +216,19 @@ unsafe fn handle_mouse_event(obj: &mut Box<dyn Ele>, msg: UINT, wparam: WPARAM, 
         WM_LBUTTONDBLCLK | WM_RBUTTONDBLCLK | WM_MBUTTONDBLCLK | WM_XBUTTONDBLCLK => {
             Event::MouseDoubleClicked { button, pos, mk }
         }
+        _ => return,
+    };
+    obj.on_event(&event);
+}
+
+unsafe fn handle_key_event(obj: &mut Box<dyn Ele>, msg: UINT, wparam: WPARAM) {
+    let vk = wparam as i32;
+    let key = vk_to_key(vk);
+    let event = match msg {
+        WM_KEYDOWN => Event::KeyPressed { key, sys: false },
+        WM_KEYUP => Event::KeyReleased { key, sys: false },
+        WM_SYSKEYDOWN => Event::KeyPressed { key, sys: true },
+        WM_SYSKEYUP => Event::KeyReleased { key, sys: true },
         _ => return,
     };
     obj.on_event(&event);

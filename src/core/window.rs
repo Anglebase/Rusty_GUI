@@ -1,8 +1,10 @@
 use std::{os::raw::c_void, ptr::null_mut};
 
-use crate::{create_window, disable_window, enable_window, get_absolute_rect, get_rect, get_window_title, set_window_maximized, set_window_minimized, set_window_rect, set_window_restored, set_window_title, set_window_visible, show_and_update, update_window, Rect};
+use crate::{
+    create_window, disable_window, enable_window, get_absolute_rect, get_rect, get_window_title, register_hotkey_for_window, set_window_maximized, set_window_minimized, set_window_rect, set_window_restored, set_window_title, set_window_visible, show_and_update, update_window, HotKeyFlags, Rect
+};
 
-use super::{Ele, Widget};
+use super::{Ele, KeyCode, Widget};
 
 #[derive(Clone)]
 pub struct Window {
@@ -76,5 +78,12 @@ impl Window {
 
     pub fn enable(&self) {
         enable_window(self.hwnd);
+    }
+
+    pub fn register_hotkey(&self, id: i32, modifiers: HotKeyFlags, key: KeyCode) {
+        if id < 0 || id > 0xBFFF {
+            panic!("Invalid hotkey id: {}", id);
+        }
+        register_hotkey_for_window(self.hwnd, id, key, modifiers);
     }
 }

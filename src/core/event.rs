@@ -1,25 +1,62 @@
+use crate::HotKeyFlags;
 use crate::Point;
 use crate::Size;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Event {
-    KeyPressed { key: KeyCode },
-    KeyReleased { key: KeyCode },
+    KeyPressed {
+        key: KeyCode,
+        sys: bool,
+    },
+    KeyReleased {
+        key: KeyCode,
+        sys: bool,
+    },
 
-    MouseMoved { pos: Point, mk: ModifierKey },
-    MouseButtonPressed { button: MouseButton, pos: Point, mk: ModifierKey },
-    MouseButtonReleased { button: MouseButton, pos: Point, mk: ModifierKey },
-    MouseWheelScrolled { wheel: MouseWheel, pos: Point, mk: ModifierKey },
-    MouseDoubleClicked { button: MouseButton, pos: Point, mk: ModifierKey },
+    MouseMoved {
+        pos: Point,
+        mk: ModifierKey,
+    },
+    MouseButtonPressed {
+        button: MouseButton,
+        pos: Point,
+        mk: ModifierKey,
+    },
+    MouseButtonReleased {
+        button: MouseButton,
+        pos: Point,
+        mk: ModifierKey,
+    },
+    MouseWheelScrolled {
+        wheel: MouseWheel,
+        pos: Point,
+        mk: ModifierKey,
+    },
+    MouseDoubleClicked {
+        button: MouseButton,
+        pos: Point,
+        mk: ModifierKey,
+    },
 
     WindowCreated,
     WindowDestroyed,
-    WindowResized { size: Size },
-    WindowMoved { pos: Point },
     WindowClosed,
-    WindowMinimized,
-    WindowMaximized,
-    WindowRestored,
+    WindowMoved {
+        pos: Point,
+    },
+
+    WindowResized {
+        size: Size,
+        ty: WindowSize,
+    },
+
+    Input {
+        ch: char,
+    },
+    HotKey {
+        key: KeyCode,
+        modifiers: HotKeyFlags,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -63,6 +100,7 @@ pub enum KeyCode {
     End,        // End
     PageUp,     // PageUp(PgUp)
     PageDown,   // PageDown(PgDn)
+    Clear,      // Clear(Num 5)
 
     LeftButton,   // Left mouse button
     RightButton,  // Right mouse button
@@ -97,6 +135,17 @@ pub enum ModifierKey {
     Shift,
     Ctrl,
     Alt,
+    Win,
     Mouse(MouseButton),
     None,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WindowSize {
+    Resize,
+    Minimize,
+    Maximize,
+    Restore,
+    MaxHide,
+    MaxShow,
 }

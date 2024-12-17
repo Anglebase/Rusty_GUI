@@ -32,3 +32,22 @@ impl Application {
         event_loop();
     }
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct HotKeyFlags {
+    pub alt: bool,
+    pub ctrl: bool,
+    pub shift: bool,
+    pub win: bool,
+}
+
+impl Default for HotKeyFlags {
+    fn default() -> Self {
+        Self {
+            alt: false,
+            ctrl: false,
+            shift: false,
+            win: false,
+        }
+    }
+}
