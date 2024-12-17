@@ -115,6 +115,19 @@ impl Point {
         let dy = (self.y - other.y) as f32;
         (dx.powi(2) + dy.powi(2)).sqrt()
     }
+
+    pub fn within(&self, rect: &Rect) -> bool {
+        self.x >= rect.pos.x
+            && self.x < rect.pos.x + rect.size.width
+            && self.y >= rect.pos.y
+            && self.y < rect.pos.y + rect.size.height
+    }
+}
+
+impl Size {
+    pub fn area(self) -> i32 {
+        self.width * self.height
+    }
 }
 
 impl Rect {
@@ -137,6 +150,23 @@ impl Rect {
             && this_right >= other_right
             && this_top <= other_top
             && this_bottom >= other_bottom
+    }
+
+    pub fn center(&self) -> Point {
+        pos!(
+            self.pos.x + self.size.width / 2,
+            self.pos.y + self.size.height / 2,
+        )
+    }
+
+    pub fn center_rect(&self, size: Size) -> Rect {
+        let center = self.center();
+        rect!(
+            center.x - size.width / 2,
+            center.y - size.height / 2,
+            size.width,
+            size.height,
+        )
     }
 }
 

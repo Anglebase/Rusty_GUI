@@ -6,10 +6,11 @@ pub enum Event {
     KeyPressed { key: KeyCode },
     KeyReleased { key: KeyCode },
 
-    MouseMoved { pos: Point },
-    MouseButtonPressed { button: MouseButton, pos: Point },
-    MouseButtonReleased { button: MouseButton, pos: Point },
-    MouseWheelScrolled { wheel: MouseWheel, pos: Point },
+    MouseMoved { pos: Point, mk: ModifierKey },
+    MouseButtonPressed { button: MouseButton, pos: Point, mk: ModifierKey },
+    MouseButtonReleased { button: MouseButton, pos: Point, mk: ModifierKey },
+    MouseWheelScrolled { wheel: MouseWheel, pos: Point, mk: ModifierKey },
+    MouseDoubleClicked { button: MouseButton, pos: Point, mk: ModifierKey },
 
     WindowCreated,
     WindowDestroyed,
@@ -89,4 +90,13 @@ pub enum MouseButton {
 pub enum MouseWheel {
     Up,
     Down,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ModifierKey {
+    Shift,
+    Ctrl,
+    Alt,
+    Mouse(MouseButton),
+    None,
 }

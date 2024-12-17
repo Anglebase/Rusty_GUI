@@ -124,3 +124,33 @@ pub fn set_window_visible(hwnd: *mut c_void, visible: bool) {
         ShowWindow(hwnd as _, if visible { SW_SHOW } else { SW_HIDE });
     }
 }
+
+pub fn set_window_minimized(hwnd: *mut c_void) {
+    unsafe {
+        ShowWindow(hwnd as _, SW_MINIMIZE);
+    }
+}
+
+pub fn set_window_maximized(hwnd: *mut c_void) {
+    unsafe {
+        ShowWindow(hwnd as _, SW_MAXIMIZE);
+    }
+}
+
+pub fn set_window_restored(hwnd: *mut c_void) {
+    unsafe {
+        ShowWindow(hwnd as _, SW_RESTORE);
+    }
+}
+
+pub fn disable_window(hwnd: *mut c_void) {
+    unsafe {
+        EnableWindow(hwnd as _, 0);
+    }
+}
+
+pub fn enable_window(hwnd: *mut c_void) {
+    unsafe {
+        EnableWindow(hwnd as _, 1);
+    }
+}

@@ -41,13 +41,23 @@ impl Drawable for PushButton {
 
 impl EventListener for PushButton {
     fn on_event(&mut self, event: &crate::Event) {
-        if let Event::MouseButtonPressed { button, pos: _ } = event {
+        if let Event::MouseButtonPressed {
+            button,
+            pos: _,
+            mk: _,
+        } = event
+        {
             if *button == MouseButton::Left {
                 self.status = true;
                 self.notifier.notify(&self.status);
             }
         }
-        if let Event::MouseButtonReleased { button, pos: _ } = event {
+        if let Event::MouseButtonReleased {
+            button,
+            pos: _,
+            mk: _,
+        } = event
+        {
             if *button == MouseButton::Left {
                 self.status = false;
                 self.notifier.notify(&self.status);

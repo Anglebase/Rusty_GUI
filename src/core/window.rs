@@ -1,6 +1,6 @@
 use std::{os::raw::c_void, ptr::null_mut};
 
-use crate::{create_window, get_absolute_rect, get_rect, get_window_title, set_window_rect, set_window_title, set_window_visible, show_and_update, update_window, Rect};
+use crate::{create_window, disable_window, enable_window, get_absolute_rect, get_rect, get_window_title, set_window_maximized, set_window_minimized, set_window_rect, set_window_restored, set_window_title, set_window_visible, show_and_update, update_window, Rect};
 
 use super::{Ele, Widget};
 
@@ -52,5 +52,29 @@ impl Window {
 
     pub fn show(&self) {
         show_and_update(self.hwnd);
+    }
+
+    pub fn hide(&self) {
+        self.set_visible(false);
+    }
+
+    pub fn minimize(&self) {
+        set_window_minimized(self.hwnd);
+    }
+
+    pub fn maximize(&self) {
+        set_window_maximized(self.hwnd);
+    }
+
+    pub fn restore(&self) {
+        set_window_restored(self.hwnd);
+    }
+
+    pub fn disable(&self) {
+        disable_window(self.hwnd);
+    }
+
+    pub fn enable(&self) {
+        enable_window(self.hwnd);
     }
 }
