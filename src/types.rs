@@ -282,4 +282,7 @@ impl Color {
     pub const CYAN: Color = rgb!(0, 255, 255);
     pub const MAGENTA: Color = rgb!(255, 0, 255);
     pub const TRANSPARENT: Color = rgb!(0, 0, 0, 0);
+    pub const GRAY: Color = rgb!(128, 128, 128);
+    pub const LIGHT_GRAY: Color = rgb!(192, 192, 192);
+    pub const DARK_GRAY: Color = rgb!(64, 64, 64);
 }

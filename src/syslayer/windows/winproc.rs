@@ -5,7 +5,10 @@ use winapi::{
         minwindef::{LPARAM, LRESULT, UINT, WPARAM},
         windef::{HDC, HWND, RECT},
     },
-    um::winuser::*,
+    um::{
+        wingdi::{SetBkMode, TRANSPARENT},
+        winuser::*,
+    },
 };
 
 use crate::*;
@@ -61,6 +64,13 @@ pub(super) unsafe extern "system" fn winproc(
             let mut window_count = WINDOW_COUNT.lock().unwrap();
             *window_count += 1;
         }
+        let mut ent = TRACKMOUSEEVENT {
+            cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
+            dwFlags: TME_HOVER | TME_LEAVE,
+            hwndTrack: hwnd,
+            dwHoverTime: 0,
+        };
+        TrackMouseEvent(&mut ent);
         // call init
         let object_ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut Box<dyn Ele>;
         let obj = object_ptr.as_mut().unwrap();
@@ -101,6 +111,7 @@ pub(super) unsafe extern "system" fn winproc(
                 rgbReserved: [0; 32],
             };
             let hdc = BeginPaint(hwnd, &mut ps);
+            SetBkMode(hdc, TRANSPARENT as _);
             let mut canvas = Canvas {
                 hdc: hdc as _,
                 rect: get_rect(hwnd as _),

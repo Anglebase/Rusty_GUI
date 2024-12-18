@@ -34,8 +34,8 @@ impl AsWindow for PushButton {
 
 impl Drawable for PushButton {
     fn draw(&mut self, canvas: &mut crate::Canvas) {
-        canvas.clear(Color::RED);
-        println!("Draw PushButton: {}", self.label);
+        canvas.clear(Color::LIGHT_GRAY);
+        canvas.rect_text(self.as_window().rect(), &self.label);
     }
 }
 

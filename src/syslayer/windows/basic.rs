@@ -5,13 +5,10 @@ use winapi::{
         ntdef::WCHAR,
         windef::{HBRUSH, HWND, POINT},
     },
-    um::{
-        libloaderapi::GetModuleHandleW,
-        winuser::*,
-    },
+    um::{libloaderapi::GetModuleHandleW, winuser::*},
 };
 
-use crate::{Ele, Rect, Window, Widget};
+use crate::{Ele, Rect, Widget, Window};
 
 use super::winproc;
 
@@ -39,7 +36,12 @@ pub fn register_class(class_name: &Vec<WCHAR>) {
     }
 }
 
-pub fn create_window<T: Ele>(title: &str, rect: Rect, parent: Option<&Window>, wp: &Widget<T>) -> HWND {
+pub fn create_window<T: Ele>(
+    title: &str,
+    rect: Rect,
+    parent: Option<&Window>,
+    wp: &Widget<T>,
+) -> HWND {
     let class_name = type_name::<T>()
         .to_string()
         .encode_utf16()
