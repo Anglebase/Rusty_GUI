@@ -2,7 +2,7 @@
 
 This is a simple GUI library for Rust.
 
-**It is still in development and may not be fully functional.**
+**This is the first pre-release version of the library.**
 
 # Features
 

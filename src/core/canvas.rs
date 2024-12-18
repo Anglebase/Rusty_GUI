@@ -88,7 +88,7 @@ impl Default for FontStyle {
             italic: false,
             underline: false,
             strikeout: false,
-            font: String::from("宋体"),
+            font: String::from("Arial"),
         }
     }
 }
