@@ -183,6 +183,22 @@ pub(super) unsafe extern "system" fn winproc(
             obj.on_event(&event);
             return 0;
         }
+        WM_ENABLE => {
+            let enable = wparam != 0;
+            let event = if enable {
+                Event::WindowEnable
+            } else {
+                Event::WindowDisable
+            };
+            obj.on_event(&event);
+            return 0;
+        }
+        WM_TIMER => {
+            let id = wparam as usize;
+            let event = Event::Timer { id };
+            obj.on_event(&event);
+            return 0;
+        }
         _ => {}
     };
     DefWindowProcW(hwnd, msg, wparam, lparam)

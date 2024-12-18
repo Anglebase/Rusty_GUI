@@ -1,8 +1,6 @@
 use std::{os::raw::c_void, ptr::null_mut};
 
-use crate::{
-    create_window, disable_window, enable_window, get_absolute_rect, get_rect, get_window_title, register_hotkey_for_window, set_window_maximized, set_window_minimized, set_window_rect, set_window_restored, set_window_title, set_window_visible, show_and_update, update_window, HotKeyFlags, Rect
-};
+use crate::*;
 
 use super::{Ele, KeyCode, Widget};
 
@@ -86,4 +84,24 @@ impl Window {
         }
         register_hotkey_for_window(self.hwnd, id, key, modifiers);
     }
+
+    pub fn set_timer(&self, id: usize, interval: u32) {
+        set_window_timer(self.hwnd, id, interval);
+    }
+
+    pub fn kill_timer(&self, id: usize) {
+        kill_window_timer(self.hwnd, id);
+    }
+
+    pub fn set_style(&self, style: WindowStyle) {
+        set_window_style(self.hwnd, style);
+    }
+
+    pub fn get_style(&self) -> WindowStyle {
+        get_window_style(self.hwnd)
+    }
+
+    // pub fn set_vpage(&self, vpage: u32) {
+    //     set_window_vpage(self.hwnd, vpage);
+    // }
 }

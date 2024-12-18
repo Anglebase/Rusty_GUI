@@ -51,3 +51,34 @@ impl Default for HotKeyFlags {
         }
     }
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct WindowStyle{
+    // pub hscroll: bool,
+    // pub vscroll: bool,
+    pub border: bool,
+    pub resize: bool,
+    pub caption: bool,
+    pub child: bool,
+    pub sysmenu: bool,
+    pub maxbox: bool,
+    pub minbox: bool,
+    pub topmost: bool,
+}
+
+impl Default for WindowStyle {
+    fn default() -> Self {
+        Self {
+            // hscroll: false,
+            // vscroll: false,
+            border: false,
+            resize: true,
+            caption: true,
+            child: false,
+            sysmenu: true,
+            maxbox: true,
+            minbox: true,
+            topmost: false,
+        }
+    }
+}

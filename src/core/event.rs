@@ -44,6 +44,8 @@ pub enum Event {
     WindowMoved {
         pos: Point,
     },
+    WindowDisable,
+    WindowEnable,
 
     WindowResized {
         size: Size,
@@ -56,6 +58,10 @@ pub enum Event {
     HotKey {
         key: KeyCode,
         modifiers: HotKeyFlags,
+    },
+
+    Timer {
+        id: usize,
     },
 }
 
