@@ -1,11 +1,6 @@
 use std::os::raw::c_void;
 
-use crate::{
-    clear_device, delete_object, draw_arc, draw_circle, draw_ellipse, draw_fill_polygon,
-    draw_fill_rect, draw_fille_circle, draw_fille_ellipse, draw_fille_pie, draw_line, draw_pie,
-    draw_polygon, draw_polyline, draw_rect, draw_rect_text, draw_xy_text, new_brush_object,
-    new_font_object, new_pen_object, select_object, BrushParam, Color, PenParam, Point, Rect,
-};
+use crate::*;
 
 pub enum PenStyle {
     Solid,

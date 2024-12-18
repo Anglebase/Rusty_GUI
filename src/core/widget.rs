@@ -2,6 +2,7 @@ use std::ops::{Deref, DerefMut};
 
 use super::Ele;
 
+/// This structure is the warpper of every widget.
 pub struct Widget<T: Ele> {
     _data: Box<Box<dyn Ele>>,
     type_data: Option<Box<T>>,
