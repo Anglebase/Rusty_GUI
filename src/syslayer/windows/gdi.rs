@@ -6,7 +6,7 @@ use winapi::{
     um::{wingdi::*, winuser::*},
 };
 
-use crate::{rect, Color, PenStyle, Point, Rect};
+use crate::{rect, Color, FontStyle, PenStyle, Point, Rect};
 
 pub fn clear_device(hdc: *mut c_void, rect: Rect, color: Color) {
     unsafe {
@@ -51,6 +51,33 @@ pub fn new_pen_object(param: PenParam) -> *mut c_void {
             };
             unsafe { CreatePen(style.try_into().unwrap(), width, color) as *mut c_void }
         }
+    }
+}
+
+pub fn new_font_object(style: FontStyle) -> *mut c_void {
+    let family = style
+        .font
+        .to_string()
+        .encode_utf16()
+        .chain(Some(0))
+        .collect::<Vec<u16>>();
+    unsafe {
+        CreateFontW(
+            style.size,
+            0,
+            0,
+            0,
+            style.weight as i32,
+            style.italic as u32,
+            style.underline as u32,
+            style.strikeout as u32,
+            DEFAULT_CHARSET,
+            OUT_DEFAULT_PRECIS,
+            CLIP_DEFAULT_PRECIS,
+            DEFAULT_QUALITY,
+            DEFAULT_PITCH | FF_DONTCARE,
+            family.as_ptr(),
+        ) as _
     }
 }
 

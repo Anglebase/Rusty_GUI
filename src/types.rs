@@ -270,10 +270,18 @@ macro_rules! rgb {
             alpha: $a,
         }
     };
+    ($gray: expr $(,)?) => {
+        $crate::Color {
+            red: $gray,
+            green: $gray,
+            blue: $gray,
+            alpha: 255,
+        }
+    }
 }
 
 impl Color {
-    pub const BLACK: Color = rgb!(0, 0, 0);
+    pub const BLACK: Color = rgb!(0);
     pub const WHITE: Color = rgb!(255, 255, 255);
     pub const RED: Color = rgb!(255, 0, 0);
     pub const GREEN: Color = rgb!(0, 255, 0);
@@ -282,7 +290,7 @@ impl Color {
     pub const CYAN: Color = rgb!(0, 255, 255);
     pub const MAGENTA: Color = rgb!(255, 0, 255);
     pub const TRANSPARENT: Color = rgb!(0, 0, 0, 0);
-    pub const GRAY: Color = rgb!(128, 128, 128);
-    pub const LIGHT_GRAY: Color = rgb!(192, 192, 192);
-    pub const DARK_GRAY: Color = rgb!(64, 64, 64);
+    pub const GRAY: Color = rgb!(160);
+    pub const LIGHT_GRAY: Color = rgb!(210);
+    pub const DARK_GRAY: Color = rgb!(85);
 }

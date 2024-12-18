@@ -1,7 +1,10 @@
 use std::os::raw::c_void;
 
 use crate::{
-    clear_device, delete_object, draw_arc, draw_circle, draw_ellipse, draw_fill_polygon, draw_fill_rect, draw_fille_circle, draw_fille_ellipse, draw_fille_pie, draw_line, draw_pie, draw_polygon, draw_polyline, draw_rect, draw_rect_text, draw_xy_text, new_brush_object, new_pen_object, select_object, BrushParam, Color, PenParam, Point, Rect
+    clear_device, delete_object, draw_arc, draw_circle, draw_ellipse, draw_fill_polygon,
+    draw_fill_rect, draw_fille_circle, draw_fille_ellipse, draw_fille_pie, draw_line, draw_pie,
+    draw_polygon, draw_polyline, draw_rect, draw_rect_text, draw_xy_text, new_brush_object,
+    new_font_object, new_pen_object, select_object, BrushParam, Color, PenParam, Point, Rect,
 };
 
 pub enum PenStyle {
@@ -49,11 +52,56 @@ impl Brush {
 
 #[derive(Clone)]
 pub struct Font {
-    hfont: *mut c_void,
+    pub(crate) hfont: *mut c_void,
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FontWeight {
+    Dontcare = 0,
+    Thin = 100,
+    ExtraLight = 200,
+    Light = 300,
+    Normal = 400,
+    Medium = 500,
+    SemiBold = 600,
+    Bold = 700,
+    ExtraBold = 800,
+    Black = 900,
+}
+
+#[derive(Clone)]
+pub struct FontStyle {
+    pub size: i32,
+    pub weight: FontWeight,
+    pub italic: bool,
+    pub underline: bool,
+    pub strikeout: bool,
+    pub font: String,
+}
+
 impl Drop for Font {
     fn drop(&mut self) {
         delete_object(self.hfont);
+    }
+}
+
+impl Default for FontStyle {
+    fn default() -> Self {
+        Self {
+            size: 16,
+            weight: FontWeight::Normal,
+            italic: false,
+            underline: false,
+            strikeout: false,
+            font: String::from("宋体"),
+        }
+    }
+}
+
+impl Font {
+    pub fn new(style: FontStyle) -> Self {
+        let hfont = new_font_object(style);
+        Self { hfont }
     }
 }
 

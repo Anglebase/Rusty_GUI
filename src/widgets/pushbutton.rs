@@ -1,12 +1,10 @@
-use crate::{
-    AsWindow, Color, Drawable, Event, EventListener, MouseButton, Notifier, Rect, Widget, Window,
-};
+use crate::*;
 
 pub struct PushButton {
     this: Window,
     label: String,
     status: bool,
-    pub notifier: Notifier<bool>,
+    pub push: Notifier<bool>,
 }
 
 impl PushButton {
@@ -15,7 +13,7 @@ impl PushButton {
             this: Window::default(),
             label: label.to_string().clone(),
             status: false,
-            notifier: Notifier::new(),
+            push: Notifier::new(),
         }));
         *this.as_window_mut() = Window::new(label, rect, Some(parent), &this);
         this
@@ -35,6 +33,12 @@ impl AsWindow for PushButton {
 impl Drawable for PushButton {
     fn draw(&mut self, canvas: &mut crate::Canvas) {
         canvas.clear(Color::LIGHT_GRAY);
+        let fs = FontStyle {
+            size: 16,
+            ..Default::default()
+        };
+        let fo = Font::new(fs);
+        canvas.set_font(&fo);
         canvas.rect_text(self.as_window().rect(), &self.label);
     }
 }
@@ -49,7 +53,7 @@ impl EventListener for PushButton {
         {
             if *button == MouseButton::Left {
                 self.status = true;
-                self.notifier.notify(&self.status);
+                self.push.notify(&self.status);
             }
         }
         if let Event::MouseButtonReleased {
@@ -60,7 +64,7 @@ impl EventListener for PushButton {
         {
             if *button == MouseButton::Left {
                 self.status = false;
-                self.notifier.notify(&self.status);
+                self.push.notify(&self.status);
             }
         }
     }
