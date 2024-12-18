@@ -31,7 +31,6 @@ impl Drawable for Block {
 
 impl EventListener for Block {
     fn on_event(&mut self, event: &crate::Event) {
-        // let _ = event;
-        println!("Block event: {:?}", event);
+        let _ = event;
     }
 }
