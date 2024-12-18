@@ -40,7 +40,6 @@ pub enum Event {
 
     WindowCreated,
     WindowDestroyed,
-    WindowClosed,
     WindowMoved {
         pos: Point,
     },
