@@ -53,7 +53,7 @@ pub fn create_window<T: Ele>(
         .encode_utf16()
         .chain(Some(0))
         .collect::<Vec<WCHAR>>();
-    unsafe {
+    let hwnd = unsafe {
         CreateWindowExW(
             0,
             class_name.as_ptr(),
@@ -76,7 +76,15 @@ pub fn create_window<T: Ele>(
             null_mut(),
             wp.addr() as _,
         )
-    }
+    };
+    let mut tme = TRACKMOUSEEVENT {
+        cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
+        dwFlags: TME_HOVER | TME_LEAVE,
+        hwndTrack: hwnd,
+        dwHoverTime: 0,
+    };
+    unsafe { TrackMouseEvent(&mut tme) };
+    hwnd
 }
 
 pub fn event_loop() {

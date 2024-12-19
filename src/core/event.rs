@@ -62,6 +62,12 @@ pub enum Event {
     Timer {
         id: usize,
     },
+
+    Hover {
+        pos: Point,
+        mk: ModifierKey,
+    },
+    Leave,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

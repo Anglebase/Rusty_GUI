@@ -4,7 +4,7 @@ use super::Ele;
 
 /// This structure is the warpper of every widget.
 pub struct Widget<T: Ele> {
-    _data: Box<Box<dyn Ele>>,
+    _data: Box<(Box<dyn Ele>, bool)>,
     type_data: Option<Box<T>>,
     addr: usize,
 }
@@ -28,11 +28,9 @@ impl<T: Ele> Widget<T> {
         let type_ptr = Box::into_raw(data);
         let dyn_ptr = type_ptr as *mut dyn Ele;
         let box_ptr = unsafe { Box::from_raw(dyn_ptr) };
-        let addr = Box::into_raw(Box::new(box_ptr)) as usize;
-        println!("addr: {}", addr);
-        println!("type_ptr: {:p}", type_ptr);
+        let addr = Box::into_raw(Box::new((box_ptr, false))) as usize;
         Self {
-            _data: unsafe { Box::from_raw(addr as *mut Box<dyn Ele>) },
+            _data: unsafe { Box::from_raw(addr as *mut (Box<dyn Ele>, bool)) },
             type_data: unsafe { Some(Box::from_raw(type_ptr)) },
             addr,
         }

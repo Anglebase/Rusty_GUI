@@ -34,8 +34,8 @@ macro_rules! wparam_to_mkey {
 
 macro_rules! lparam_to_pos {
     ($lparam:expr) => {{
-        let x = $lparam as i32 & 0xffff;
-        let y = ($lparam >> 16) as i32 & 0xffff;
+        let x = ($lparam & 0xffff) as i32;
+        let y = (($lparam >> 16) & 0xffff) as i32;
         pos!(x, y)
     }};
 }
@@ -72,14 +72,14 @@ pub(super) unsafe extern "system" fn winproc(
         };
         TrackMouseEvent(&mut ent);
         // call init
-        let object_ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut Box<dyn Ele>;
-        let obj = object_ptr.as_mut().unwrap();
+        let object_ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut (Box<dyn Ele>, bool);
+        let (obj, _) = object_ptr.as_mut().unwrap();
         obj.on_event(&Event::WindowCreated);
         return DefWindowProcW(hwnd, msg, wparam, lparam);
     }
     // get window object
-    let object_ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut Box<dyn Ele>;
-    let obj = if object_ptr.is_null() {
+    let object_ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut (Box<dyn Ele>, bool);
+    let (obj, hover) = if object_ptr.is_null() {
         return DefWindowProcW(hwnd, msg, wparam, lparam);
     } else {
         object_ptr.as_mut().unwrap()
@@ -131,6 +131,13 @@ pub(super) unsafe extern "system" fn winproc(
             let mk = wparam_to_mkey!(wparam & 0xffff);
             let event = Event::MouseMoved { pos, mk };
             obj.on_event(&event);
+            let mut tme = TRACKMOUSEEVENT {
+                cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
+                dwFlags: TME_HOVER | TME_LEAVE,
+                hwndTrack: hwnd,
+                dwHoverTime: 1,
+            };
+            TrackMouseEvent(&mut tme);
             return 0;
         }
         WM_MOUSEWHEEL => {
@@ -208,6 +215,24 @@ pub(super) unsafe extern "system" fn winproc(
             let id = wparam as usize;
             let event = Event::Timer { id };
             obj.on_event(&event);
+            return 0;
+        }
+        WM_MOUSELEAVE => {
+            if *hover {
+                let event = Event::Leave;
+                obj.on_event(&event);
+                *hover = false;
+            }
+            return 0;
+        }
+        WM_MOUSEHOVER => {
+            if !*hover {
+                let pos = lparam_to_pos!(lparam);
+                let mk = wparam_to_mkey!(wparam);
+                let event = Event::Hover { pos, mk };
+                obj.on_event(&event);
+                *hover = true;
+            }
             return 0;
         }
         _ => {}
