@@ -6,7 +6,7 @@ pub struct PushButton {
     label: String,
     status: bool,
     bkcolor: Color,
-    pub push: Notifier<bool>,
+    pub pushdown: Notifier<bool>,
 }
 
 impl PushButton {
@@ -15,7 +15,7 @@ impl PushButton {
             this: Window::default(),
             label: label.to_string().clone(),
             status: false,
-            push: Notifier::new(),
+            pushdown: Notifier::new(),
             bkcolor: rgb!(230),
         }));
         *this.as_window_mut() = Window::new(label, rect, Some(parent), &this);
@@ -35,14 +35,29 @@ impl AsWindow for PushButton {
 
 impl Drawable for PushButton {
     fn draw(&mut self, canvas: &mut crate::Canvas) {
+        let rect = self.as_window().rect();
         canvas.clear(self.bkcolor);
         let fs = FontStyle {
-            size: 16,
+            size: 24,
             ..Default::default()
         };
         let fo = Font::new(fs);
         canvas.set_font(&fo);
-        canvas.rect_text(self.as_window().rect(), &self.label);
+        let text_rect = if self.status {
+            Rect {
+                pos: rect.pos + Point { x: 1, y: 1 },
+                size: rect.size,
+            }
+        } else {
+            rect
+        };
+        canvas.rect_text(text_rect, &self.label, Default::default());
+        if !self.status {
+            let ls = Pen::new(PenStyle::default());
+            canvas.set_pen(&ls);
+            canvas.line(rect.right(), rect.top(), rect.right(), rect.bottom());
+            canvas.line(rect.left(), rect.bottom(), rect.right(), rect.bottom());
+        }
     }
 }
 
@@ -56,7 +71,8 @@ impl EventListener for PushButton {
             } => {
                 if *button == MouseButton::Left {
                     self.status = true;
-                    self.push.notify(&self.status);
+                    self.pushdown.notify(&self.status);
+                    self.this.update();
                 }
             }
             Event::MouseButtonReleased {
@@ -66,7 +82,8 @@ impl EventListener for PushButton {
             } => {
                 if *button == MouseButton::Left {
                     self.status = false;
-                    self.push.notify(&self.status);
+                    self.pushdown.notify(&self.status);
+                    self.this.update();
                 }
             }
             Event::Hover { pos: _, mk: _ } => {

@@ -168,6 +168,35 @@ impl Rect {
             size.height,
         )
     }
+
+    pub fn top(&self) -> i32 {
+        self.pos.y
+    }
+    pub fn bottom(&self) -> i32 {
+        self.pos.y + self.size.height
+    }
+    pub fn left(&self) -> i32 {
+        self.pos.x
+    }
+    pub fn right(&self) -> i32 {
+        self.pos.x + self.size.width
+    }
+
+    pub fn top_left(&self) -> Point {
+        pos!(self.pos.x, self.pos.y)
+    }
+    pub fn top_right(&self) -> Point {
+        pos!(self.pos.x + self.size.width, self.pos.y)
+    }
+    pub fn bottom_left(&self) -> Point {
+        pos!(self.pos.x, self.pos.y + self.size.height)
+    }
+    pub fn bottom_right(&self) -> Point {
+        pos!(
+            self.pos.x + self.size.width,
+            self.pos.y + self.size.height,
+        )
+    }
 }
 
 use std::ops::{BitAnd, BitOr};
@@ -277,7 +306,7 @@ macro_rules! rgb {
             blue: $gray,
             alpha: 255,
         }
-    }
+    };
 }
 
 impl Color {

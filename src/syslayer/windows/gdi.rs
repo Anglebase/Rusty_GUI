@@ -1,4 +1,3 @@
-use core::panic;
 use std::{f32::consts::PI, os::raw::c_void, ptr::null_mut};
 
 use winapi::{
@@ -6,7 +5,7 @@ use winapi::{
     um::{wingdi::*, winuser::*},
 };
 
-use crate::{rect, Color, FontStyle, PenStyle, Point, Rect};
+use crate::*;
 
 pub fn clear_device(hdc: *mut c_void, rect: Rect, color: Color) {
     unsafe {
@@ -23,10 +22,6 @@ pub fn clear_device(hdc: *mut c_void, rect: Rect, color: Color) {
     }
 }
 
-pub enum PenParam {
-    Normal(PenStyle, i32, Color),
-}
-
 pub fn delete_object(obj: *mut c_void) {
     unsafe {
         DeleteObject(obj as _);
@@ -37,20 +32,38 @@ pub fn select_object(hdc: *mut c_void, obj: *mut c_void) -> *mut c_void {
     unsafe { SelectObject(hdc as _, obj as _) as *mut c_void }
 }
 
-pub fn new_pen_object(param: PenParam) -> *mut c_void {
-    match param {
-        PenParam::Normal(style, width, color) => {
-            let color = RGB(color.red, color.green, color.blue);
-            let style = match style {
-                PenStyle::Solid => PS_SOLID,
-                PenStyle::Dash => PS_DASH,
-                PenStyle::Dot => PS_DOT,
-                PenStyle::DashDot => PS_DASHDOT,
-                PenStyle::DashDotDot => PS_DASHDOTDOT,
-                PenStyle::Null => PS_NULL,
-            };
-            unsafe { CreatePen(style.try_into().unwrap(), width, color) as *mut c_void }
-        }
+pub fn new_pen_object(penstyle: PenStyle) -> *mut c_void {
+    let endcap = match penstyle.cap_style {
+        crate::CapStyle::Flat => PS_ENDCAP_FLAT,
+        crate::CapStyle::Square => PS_ENDCAP_SQUARE,
+        crate::CapStyle::Round => PS_ENDCAP_ROUND,
+    };
+    let join = match penstyle.join_style {
+        crate::JoinStyle::Miter => PS_JOIN_MITER,
+        crate::JoinStyle::Bevel => PS_JOIN_BEVEL,
+        crate::JoinStyle::Round => PS_JOIN_ROUND,
+    };
+    let style = match penstyle.line_style {
+        crate::LineStyle::Solid => PS_SOLID,
+        crate::LineStyle::Dash => PS_DASH,
+        crate::LineStyle::Dot => PS_DOT,
+        crate::LineStyle::DashDot => PS_DASHDOT,
+        crate::LineStyle::DashDotDot => PS_DASHDOTDOT,
+        crate::LineStyle::Null => PS_NULL,
+    };
+    let brush = LOGBRUSH {
+        lbStyle: BS_SOLID,
+        lbColor: RGB(penstyle.color.red, penstyle.color.green, penstyle.color.blue),
+        lbHatch: 0,
+    };
+    unsafe {
+        ExtCreatePen(
+            style | endcap | join | PS_GEOMETRIC,
+            penstyle.width,
+            &brush as *const LOGBRUSH as _,
+            0,
+            null_mut(),
+        ) as *mut c_void
     }
 }
 
@@ -109,6 +122,62 @@ pub fn draw_rect(hdc: *mut c_void, rect: Rect) {
         LineTo(hdc as _, x + w, y + h);
         LineTo(hdc as _, x, y + h);
         LineTo(hdc as _, x, y);
+    }
+}
+
+pub fn draw_round_rect(hdc: *mut c_void, rect: Rect, rx: i32, ry: i32) {
+    let (x, y, w, h) = rect.into();
+    let (left, top, right, bottom) = (x, y, x + w, y + h);
+    unsafe {
+        MoveToEx(hdc as _, left + rx, top, null_mut());
+        ArcTo(
+            hdc as _,
+            left,
+            top,
+            left + 2 * rx,
+            top + 2 * ry,
+            left + rx,
+            top,
+            left,
+            top + rx,
+        );
+        LineTo(hdc as _, left, bottom - ry);
+        ArcTo(
+            hdc as _,
+            left,
+            bottom - 2 * ry,
+            left + 2 * rx,
+            bottom,
+            left,
+            bottom - ry,
+            left + rx,
+            bottom,
+        );
+        LineTo(hdc as _, right - rx, bottom);
+        ArcTo(
+            hdc as _,
+            right - 2 * rx,
+            bottom,
+            right,
+            bottom - 2 * ry,
+            right - rx,
+            bottom,
+            right,
+            bottom - ry,
+        );
+        LineTo(hdc as _, right, top + ry);
+        ArcTo(
+            hdc as _,
+            right - 2 * rx,
+            top,
+            right,
+            top + 2 * ry,
+            right,
+            top + ry,
+            right - rx,
+            top,
+        );
+        LineTo(hdc as _, left + rx, top);
     }
 }
 
@@ -186,6 +255,14 @@ pub fn draw_fill_rect(hdc: *mut c_void, rect: Rect) {
     }
 }
 
+pub fn draw_fill_round_rect(hdc: *mut c_void, rect: Rect, rx: i32, ry: i32) {
+    let (x, y, w, h) = rect.into();
+    let (left, top, right, bottom) = (x, y, x + w, y + h);
+    unsafe {
+        RoundRect(hdc as _, left, top, right, bottom, rx * 2, ry * 2);
+    }
+}
+
 pub fn draw_fill_polygon(hdc: *mut c_void, points: &[Point]) {
     if points.len() < 2 {
         panic!("At least two points are required to draw a filled polygon");
@@ -229,14 +306,26 @@ pub fn draw_fille_circle(hdc: *mut c_void, pos: Point, radius: i32) {
     draw_fille_ellipse(hdc as _, rect);
 }
 
-pub fn draw_xy_text(hdc: *mut c_void, pos: Point, text: &str) {
+pub fn draw_xy_text(hdc: *mut c_void, pos: Point, text: &str, align: TextAlign) {
     let text = text
         .to_string()
         .encode_utf16()
         .chain(Some(0))
         .collect::<Vec<u16>>();
     let (x, y) = (pos.x, pos.y);
+    let align = match align {
+        TextAlign::LeftTop => TA_LEFT | TA_TOP,
+        TextAlign::LeftMiddle => TA_LEFT | VTA_CENTER,
+        TextAlign::LeftBottom => TA_LEFT | TA_BOTTOM,
+        TextAlign::CenterTop => TA_CENTER | TA_TOP,
+        TextAlign::Center => TA_CENTER | VTA_CENTER,
+        TextAlign::CenterBottom => TA_CENTER | TA_BOTTOM,
+        TextAlign::RightTop => TA_RIGHT | TA_TOP,
+        TextAlign::RightMiddle => TA_RIGHT | VTA_CENTER,
+        TextAlign::RightBottom => TA_RIGHT | TA_BOTTOM,
+    };
     unsafe {
+        SetTextAlign(hdc as _, align);
         TextOutW(
             hdc as _,
             x,
@@ -247,7 +336,7 @@ pub fn draw_xy_text(hdc: *mut c_void, pos: Point, text: &str) {
     }
 }
 
-pub fn draw_rect_text(hdc: *mut c_void, rect: Rect, text: &str) {
+pub fn draw_rect_text(hdc: *mut c_void, rect: Rect, text: &str, align: TextAlign) {
     let text = text
         .to_string()
         .encode_utf16()
@@ -260,13 +349,24 @@ pub fn draw_rect_text(hdc: *mut c_void, rect: Rect, text: &str) {
         right: x + w,
         bottom: y + h,
     };
+    let align = match align {
+        TextAlign::LeftTop => DT_LEFT | DT_TOP,
+        TextAlign::LeftMiddle => DT_LEFT | DT_VCENTER,
+        TextAlign::LeftBottom => DT_LEFT | DT_BOTTOM,
+        TextAlign::CenterTop => DT_CENTER | DT_TOP,
+        TextAlign::Center => DT_CENTER | DT_VCENTER,
+        TextAlign::CenterBottom => DT_CENTER | DT_BOTTOM,
+        TextAlign::RightTop => DT_RIGHT | DT_TOP,
+        TextAlign::RightMiddle => DT_RIGHT | DT_VCENTER,
+        TextAlign::RightBottom => DT_RIGHT | DT_BOTTOM,
+    };
     unsafe {
         DrawTextW(
             hdc as _,
             text.as_ptr() as _,
             (text.len() - 1).try_into().unwrap(),
             &mut rect,
-            DT_CENTER | DT_VCENTER | DT_SINGLELINE,
+            align | DT_SINGLELINE,
         );
     }
 }
