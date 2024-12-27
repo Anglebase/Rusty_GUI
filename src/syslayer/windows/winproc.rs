@@ -2,7 +2,7 @@ use std::{os::raw::c_void, sync::Mutex};
 
 use winapi::{
     shared::{
-        minwindef::{LPARAM, LRESULT, UINT, WPARAM},
+        minwindef::{BOOL, LPARAM, LRESULT, UINT, WPARAM},
         windef::{HDC, HWND, RECT},
     },
     um::{
@@ -284,4 +284,19 @@ unsafe fn handle_key_event(obj: &mut Box<dyn Ele>, msg: UINT, wparam: WPARAM) {
         _ => return,
     };
     obj.on_event(&event);
+}
+
+pub unsafe extern "system" fn enum_windows_callback(hwnd: HWND, lparam: LPARAM) -> BOOL {
+    let ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut (Box<dyn Ele>, bool);
+    let obj = if ptr.is_null() {
+        return 0;
+    }else{
+        ptr.as_mut().unwrap().0.as_mut()
+    };
+    let callback = lparam as *mut Box<dyn FnMut(&mut dyn Ele)>;
+    if callback.is_null() {
+        return 0;
+    }
+    callback.as_mut().unwrap()(obj);
+    1
 }

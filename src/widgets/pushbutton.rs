@@ -16,22 +16,15 @@ impl PushButton {
             label: label.to_string().clone(),
             status: false,
             pushdown: Notifier::new(),
-            bkcolor: rgb!(230),
+            bkcolor: rgb!(235),
         }));
         *this.as_window_mut() = Window::new(label, rect, Some(parent), &this);
         this
     }
 }
 
-impl AsWindow for PushButton {
-    fn as_window(&self) -> &Window {
-        &self.this
-    }
-
-    fn as_window_mut(&mut self) -> &mut Window {
-        &mut self.this
-    }
-}
+default_userdata!(PushButton);
+default_aswindow!(PushButton, this);
 
 impl Drawable for PushButton {
     fn draw(&mut self, canvas: &mut crate::Canvas) {
@@ -51,9 +44,13 @@ impl Drawable for PushButton {
         } else {
             rect
         };
-        canvas.rect_text(text_rect, &self.label, Default::default());
+        canvas.rect_text(text_rect, &self.label, TextAlign::Center);
         if !self.status {
-            let ls = Pen::new(PenStyle::default());
+            let ls = Pen::new(PenStyle {
+                width: 2,
+                color: Color::DARK_GRAY,
+                ..Default::default()
+            });
             canvas.set_pen(&ls);
             canvas.line(rect.right(), rect.top(), rect.right(), rect.bottom());
             canvas.line(rect.left(), rect.bottom(), rect.right(), rect.bottom());
@@ -87,11 +84,11 @@ impl EventListener for PushButton {
                 }
             }
             Event::Hover { pos: _, mk: _ } => {
-                self.bkcolor = rgb!(200);
+                self.bkcolor = rgb!(215);
                 self.this.update();
             }
             Event::Leave => {
-                self.bkcolor = rgb!(230);
+                self.bkcolor = rgb!(235);
                 self.this.update();
             }
             _ => {}

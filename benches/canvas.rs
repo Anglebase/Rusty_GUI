@@ -9,14 +9,8 @@ mod tests {
         msg: String,
     }
 
-    impl AsWindow for CanvasBencher {
-        fn as_window(&self) -> &Window {
-            &self.this
-        }
-        fn as_window_mut(&mut self) -> &mut Window {
-            &mut self.this
-        }
-    }
+    default_aswindow!(CanvasBencher, this);
+    default_userdata!(CanvasBencher);
 
     impl CanvasBencher {
         fn new() -> Widget<Self> {

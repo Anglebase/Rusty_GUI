@@ -19,14 +19,8 @@ impl Block {
     }
 }
 
-impl AsWindow for Block {
-    fn as_window(&self) -> &Window {
-        &self.this
-    }
-    fn as_window_mut(&mut self) -> &mut Window {
-        &mut self.this
-    }
-}
+default_userdata!(Block);
+default_aswindow!(Block, this);
 
 impl Drawable for Block {
     fn draw(&mut self, canvas: &mut crate::Canvas) {

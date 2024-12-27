@@ -1,5 +1,7 @@
 use std::{os::raw::c_void, ptr::null_mut};
 
+use winapi::um::winuser::EnumChildWindows;
+
 use crate::*;
 
 use super::{Ele, KeyCode, Widget};
@@ -101,7 +103,13 @@ impl Window {
         get_window_style(self.hwnd)
     }
 
-    // pub fn set_vpage(&self, vpage: u32) {
-    //     set_window_vpage(self.hwnd, vpage);
-    // }
+    pub fn foreach(&self, mut f: Box<dyn FnMut(&mut dyn Ele)>) {
+        unsafe {
+            EnumChildWindows(
+                self.hwnd as _,
+                Some(enum_windows_callback),
+                &mut f as *mut _ as _,
+            );
+        }
+    }
 }

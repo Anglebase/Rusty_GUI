@@ -6,6 +6,7 @@ mod winproc;
 use std::ptr::null_mut;
 use winproc::winproc;
 
+pub(crate) use winproc::enum_windows_callback;
 pub(crate) use apis::*;
 pub(crate) use basic::*;
 pub(crate) use gdi::*;
@@ -53,7 +54,7 @@ impl Default for HotKeyFlags {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct WindowStyle{
+pub struct WindowStyle {
     // pub hscroll: bool,
     // pub vscroll: bool,
     pub border: bool,
