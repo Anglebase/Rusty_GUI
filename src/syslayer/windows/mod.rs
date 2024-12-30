@@ -18,9 +18,11 @@ pub fn sys_type() -> &'static str {
     "windows"
 }
 
+/// Windows application interface.
 pub struct Application;
 
 impl Application {
+    /// Initialize the application.
     pub fn new(show_console: bool) -> Self {
         if !show_console {
             close_cmd();
@@ -29,6 +31,7 @@ impl Application {
         Self
     }
 
+    /// Run the application event loop.
     pub fn exec(&self) {
         event_loop();
     }

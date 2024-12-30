@@ -1,8 +1,11 @@
+//! This file contains the implementation of the `Widget` struct.
+
 use std::ops::{Deref, DerefMut};
 
 use super::Ele;
 
-/// This structure is the warpper of every widget.
+/// This struct is the wapper of GUI element.
+/// It contains the pointer to the underlying element and the address of the widget.
 pub struct Widget<T: Ele> {
     _data: Box<(Box<dyn Ele>, bool)>,
     type_data: Option<Box<T>>,
@@ -25,6 +28,7 @@ impl<T: Ele> DerefMut for Widget<T> {
 
 impl<T: Ele> Widget<T> {
     pub fn new(data: Box<T>) -> Self {
+        // make the same address for the type data and the dynamic data
         let type_ptr = Box::into_raw(data);
         let dyn_ptr = type_ptr as *mut dyn Ele;
         let box_ptr = unsafe { Box::from_raw(dyn_ptr) };
@@ -43,6 +47,7 @@ impl<T: Ele> Widget<T> {
 
 impl<T: Ele> Drop for Widget<T> {
     fn drop(&mut self) {
+        // drop the type data
         let ty_box = self.type_data.take().unwrap();
         let _ = Box::into_raw(ty_box);
     }

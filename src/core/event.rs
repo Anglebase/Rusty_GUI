@@ -1,7 +1,10 @@
+//! This file is used to define the Event enum and its variants.
+
 use crate::HotKeyFlags;
 use crate::Point;
 use crate::Size;
 
+/// The Event enum represents all possible events that can occur in a GUI application.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Event {
     KeyPressed {
@@ -12,7 +15,6 @@ pub enum Event {
         key: KeyCode,
         sys: bool,
     },
-
     MouseMoved {
         pos: Point,
         mk: ModifierKey,

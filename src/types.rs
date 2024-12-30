@@ -16,12 +16,15 @@ pub struct Rect {
     pub size: Size,
 }
 
+/// A macro to create a `Point` struct.
 #[macro_export]
 macro_rules! pos {
     ($x:expr, $y:expr $(,)?) => {
         $crate::Point { x: $x, y: $y }
     };
 }
+
+/// A macro to create a `Size` struct.
 #[macro_export]
 macro_rules! size {
     ($w:expr, $h:expr $(,)?) => {
@@ -31,6 +34,8 @@ macro_rules! size {
         }
     };
 }
+
+/// A macro to create a `Rect` struct.
 #[macro_export]
 macro_rules! rect {
     ($x:expr, $y:expr, $w:expr, $h:expr $(,)?) => {
@@ -131,6 +136,7 @@ impl Size {
 }
 
 impl Rect {
+    /// If another rectangle is completely contained by it, return true.
     pub fn contanins(&self, other: &Rect) -> bool {
         if self.size.width < other.size.width || self.size.height < other.size.height {
             return false;
@@ -152,6 +158,7 @@ impl Rect {
             && this_bottom >= other_bottom
     }
 
+    /// Return the center point of the rectangle.
     pub fn center(&self) -> Point {
         pos!(
             self.pos.x + self.size.width / 2,
@@ -159,6 +166,7 @@ impl Rect {
         )
     }
 
+    /// Return a new rectangle with the given size and centered around the center of the original rectangle.
     pub fn center_rect(&self, size: Size) -> Rect {
         let center = self.center();
         rect!(
@@ -203,6 +211,7 @@ use std::ops::{BitAnd, BitOr};
 
 impl BitAnd for Rect {
     type Output = Option<Rect>;
+    /// Return the intersection of two rectangles, or None if they don't intersect.
     fn bitand(self, other: Self) -> Option<Rect> {
         let this_left = self.pos.x;
         let this_top = self.pos.y;
@@ -281,6 +290,7 @@ pub struct Color {
     pub alpha: u8,
 }
 
+/// A macro to create a `Color` struct.
 #[macro_export]
 macro_rules! rgb {
     ($r:expr, $g:expr, $b:expr $(,)?) => {
