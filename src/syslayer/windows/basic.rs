@@ -15,8 +15,8 @@ use super::winproc;
 pub fn register_class(class_name: &Vec<WCHAR>) {
     unsafe {
         let hinstance = GetModuleHandleW(null_mut());
-        let wndcls = WNDCLASSEXW {
-            cbSize: std::mem::size_of::<WNDCLASSEXW>() as u32,
+        let windows = WNDCLASSEXW {
+            cbSize: size_of::<WNDCLASSEXW>() as u32,
             style: CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS,
             lpfnWndProc: Some(winproc),
             cbClsExtra: 0,
@@ -29,9 +29,9 @@ pub fn register_class(class_name: &Vec<WCHAR>) {
             lpszClassName: class_name.as_ptr() as _,
             hIconSm: null_mut(),
         };
-        let mut wnd = wndcls.clone();
+        let mut wnd = windows.clone();
         if GetClassInfoExW(hinstance, class_name.as_ptr(), &mut wnd as *mut _) == 0 {
-            RegisterClassExW(&wndcls);
+            RegisterClassExW(&windows);
         }
     }
 }
@@ -78,7 +78,7 @@ pub fn create_window<T: Ele>(
         )
     };
     let mut tme = TRACKMOUSEEVENT {
-        cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
+        cbSize: size_of::<TRACKMOUSEEVENT>() as u32,
         dwFlags: TME_HOVER | TME_LEAVE,
         hwndTrack: hwnd,
         dwHoverTime: 0,

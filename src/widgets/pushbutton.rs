@@ -1,12 +1,12 @@
 use crate::*;
 
-/// demo wigdet
+/// demo widget for push button
 pub struct PushButton {
     this: Window,
     label: String,
     status: bool,
-    bkcolor: Color,
-    pub pushdown: Notifier<bool>,
+    backcolor: Color,
+    pub press: Notifier<bool>,
 }
 
 impl PushButton {
@@ -15,8 +15,8 @@ impl PushButton {
             this: Window::default(),
             label: label.to_string().clone(),
             status: false,
-            pushdown: Notifier::new(),
-            bkcolor: rgb!(235),
+            press: Notifier::new(),
+            backcolor: rgb!(235),
         }));
         *this.as_window_mut() = Window::new(label, rect, Some(parent), &this);
         this
@@ -24,12 +24,12 @@ impl PushButton {
 }
 
 default_userdata!(PushButton);
-default_aswindow!(PushButton, this);
+default_as_window!(PushButton, this);
 
 impl Drawable for PushButton {
     fn draw(&mut self, canvas: &mut crate::Canvas) {
         let rect = self.as_window().rect();
-        canvas.clear(self.bkcolor);
+        canvas.clear(self.backcolor);
         let fs = FontStyle {
             size: 24,
             ..Default::default()
@@ -45,16 +45,17 @@ impl Drawable for PushButton {
             rect
         };
         canvas.rect_text(text_rect, &self.label, TextAlign::Center);
-        if !self.status {
-            let ls = Pen::new(PenStyle {
-                width: 2,
-                color: Color::DARK_GRAY,
-                ..Default::default()
-            });
-            canvas.set_pen(&ls);
-            canvas.line(rect.right(), rect.top(), rect.right(), rect.bottom());
-            canvas.line(rect.left(), rect.bottom(), rect.right(), rect.bottom());
+        if self.status {
+            return;
         }
+        let ls = Pen::new(PenStyle {
+            width: 2,
+            color: Color::DARK_GRAY,
+            ..Default::default()
+        });
+        canvas.set_pen(&ls);
+        canvas.line(rect.right(), rect.top(), rect.right(), rect.bottom());
+        canvas.line(rect.left(), rect.bottom(), rect.right(), rect.bottom());
     }
 }
 
@@ -68,7 +69,7 @@ impl EventListener for PushButton {
             } => {
                 if *button == MouseButton::Left {
                     self.status = true;
-                    self.pushdown.notify(&self.status);
+                    self.press.notify(&self.status);
                     self.this.update();
                 }
             }
@@ -79,16 +80,16 @@ impl EventListener for PushButton {
             } => {
                 if *button == MouseButton::Left {
                     self.status = false;
-                    self.pushdown.notify(&self.status);
+                    self.press.notify(&self.status);
                     self.this.update();
                 }
             }
             Event::Hover { pos: _, mk: _ } => {
-                self.bkcolor = rgb!(215);
+                self.backcolor = rgb!(215);
                 self.this.update();
             }
             Event::Leave => {
-                self.bkcolor = rgb!(235);
+                self.backcolor = rgb!(235);
                 self.this.update();
             }
             _ => {}

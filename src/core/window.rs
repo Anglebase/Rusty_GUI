@@ -1,4 +1,4 @@
-//! This file is contains the implementation of the Window struct and its methods.
+//! This file is containing the implementation of the Window struct and its methods.
 
 use std::{os::raw::c_void, ptr::null_mut};
 
@@ -17,7 +17,7 @@ pub struct Window {
 }
 
 impl Default for Window {
-    /// This method returns a empty Window struct as a placeholder.
+    /// This method returns an empty Window struct as a placeholder.
     fn default() -> Self {
         Self { hwnd: null_mut() }
     }
@@ -32,12 +32,12 @@ impl Window {
         }
     }
 
-    /// Get the area of the window 
+    /// Get the area of the window
     pub fn rect(&self) -> Rect {
         get_rect(self.hwnd)
     }
 
-    /// Get the title of the window 
+    /// Get the title of the window
     pub fn title(&self) -> String {
         get_window_title(self.hwnd)
     }

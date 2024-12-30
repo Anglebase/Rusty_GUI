@@ -12,13 +12,13 @@ pub fn clear_device(hdc: *mut c_void, rect: Rect, color: Color) {
         let rect = RECT {
             left: 0,
             top: 0,
-            right: rect.size.width as i32,
-            bottom: rect.size.height as i32,
+            right: rect.size.width,
+            bottom: rect.size.height,
         };
         let color = RGB(color.red, color.green, color.blue);
-        let hbrush = CreateSolidBrush(color);
-        FillRect(hdc as _, &rect, hbrush as _);
-        DeleteObject(hbrush as _);
+        let brush = CreateSolidBrush(color);
+        FillRect(hdc as _, &rect, brush as _);
+        DeleteObject(brush as _);
     }
 }
 
@@ -32,34 +32,34 @@ pub fn select_object(hdc: *mut c_void, obj: *mut c_void) -> *mut c_void {
     unsafe { SelectObject(hdc as _, obj as _) as *mut c_void }
 }
 
-pub fn new_pen_object(penstyle: PenStyle) -> *mut c_void {
-    let endcap = match penstyle.cap_style {
-        crate::CapStyle::Flat => PS_ENDCAP_FLAT,
-        crate::CapStyle::Square => PS_ENDCAP_SQUARE,
-        crate::CapStyle::Round => PS_ENDCAP_ROUND,
+pub fn new_pen_object(pen_style: PenStyle) -> *mut c_void {
+    let end_cap = match pen_style.cap_style {
+        CapStyle::Flat => PS_ENDCAP_FLAT,
+        CapStyle::Square => PS_ENDCAP_SQUARE,
+        CapStyle::Round => PS_ENDCAP_ROUND,
     };
-    let join = match penstyle.join_style {
-        crate::JoinStyle::Miter => PS_JOIN_MITER,
-        crate::JoinStyle::Bevel => PS_JOIN_BEVEL,
-        crate::JoinStyle::Round => PS_JOIN_ROUND,
+    let join = match pen_style.join_style {
+        JoinStyle::Miter => PS_JOIN_MITER,
+        JoinStyle::Bevel => PS_JOIN_BEVEL,
+        JoinStyle::Round => PS_JOIN_ROUND,
     };
-    let style = match penstyle.line_style {
-        crate::LineStyle::Solid => PS_SOLID,
-        crate::LineStyle::Dash => PS_DASH,
-        crate::LineStyle::Dot => PS_DOT,
-        crate::LineStyle::DashDot => PS_DASHDOT,
-        crate::LineStyle::DashDotDot => PS_DASHDOTDOT,
-        crate::LineStyle::Null => PS_NULL,
+    let style = match pen_style.line_style {
+        LineStyle::Solid => PS_SOLID,
+        LineStyle::Dash => PS_DASH,
+        LineStyle::Dot => PS_DOT,
+        LineStyle::DashDot => PS_DASHDOT,
+        LineStyle::DashDotDot => PS_DASHDOTDOT,
+        LineStyle::Null => PS_NULL,
     };
     let brush = LOGBRUSH {
         lbStyle: BS_SOLID,
-        lbColor: RGB(penstyle.color.red, penstyle.color.green, penstyle.color.blue),
+        lbColor: RGB(pen_style.color.red, pen_style.color.green, pen_style.color.blue),
         lbHatch: 0,
     };
     unsafe {
         ExtCreatePen(
-            style | endcap | join | PS_GEOMETRIC,
-            penstyle.width,
+            style | end_cap | join | PS_GEOMETRIC,
+            pen_style.width,
             &brush as *const LOGBRUSH as _,
             0,
             null_mut(),
@@ -276,7 +276,7 @@ pub fn draw_fill_polygon(hdc: *mut c_void, points: &[Point]) {
     }
 }
 
-pub fn draw_fille_pie(hdc: *mut c_void, rect: Rect, start: f32, sweep: f32) {
+pub fn draw_fill_pie(hdc: *mut c_void, rect: Rect, start: f32, sweep: f32) {
     let (left, top, w, h) = rect.into();
     let (right, bottom) = (left + w, top + h);
     let (x, y) = (left + w / 2, top + h / 2);
@@ -293,7 +293,7 @@ pub fn draw_fille_pie(hdc: *mut c_void, rect: Rect, start: f32, sweep: f32) {
     }
 }
 
-pub fn draw_fille_ellipse(hdc: *mut c_void, rect: Rect) {
+pub fn draw_fill_ellipse(hdc: *mut c_void, rect: Rect) {
     let (x, y, w, h) = rect.into();
     let (left, top, right, bottom) = (x, y, x + w, y + h);
     unsafe {
@@ -301,9 +301,9 @@ pub fn draw_fille_ellipse(hdc: *mut c_void, rect: Rect) {
     }
 }
 
-pub fn draw_fille_circle(hdc: *mut c_void, pos: Point, radius: i32) {
+pub fn draw_fill_circle(hdc: *mut c_void, pos: Point, radius: i32) {
     let rect = rect!(pos.x - radius, pos.y - radius, 2 * radius, 2 * radius);
-    draw_fille_ellipse(hdc as _, rect);
+    draw_fill_ellipse(hdc as _, rect);
 }
 
 pub fn draw_xy_text(hdc: *mut c_void, pos: Point, text: &str, align: TextAlign) {

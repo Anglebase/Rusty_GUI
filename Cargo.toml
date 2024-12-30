@@ -10,12 +10,4 @@ repository = "https://github.com/Anglebase/Rusty_GUI.git"
 cargo-args = ["--no-deps"]
 
 [dependencies]
-
-
-[target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3", features = [
-    "libloaderapi",
-    "winuser",
-    "wingdi",
-    "wincon"
-] }
+winapi = { version = "0.3", features = ["winuser", "wincon", "windef", "libloaderapi", "ntdef", "wingdi", "minwindef"] }

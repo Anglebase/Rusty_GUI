@@ -7,7 +7,7 @@ use std::{
     rc::Rc,
 };
 
-/// A warpper of callback function.
+/// A wrapper of callback function.
 pub struct Responder<T> {
     f: Rc<RefCell<dyn FnMut(&T)>>,
 }

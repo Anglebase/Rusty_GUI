@@ -9,7 +9,7 @@ mod tests {
         msg: String,
     }
 
-    default_aswindow!(CanvasBencher, this);
+    default_as_window!(CanvasBencher, this);
     default_userdata!(CanvasBencher);
 
     impl CanvasBencher {
@@ -43,7 +43,7 @@ mod tests {
             canvas.line(100, 100, 150, 150);
             canvas.polyline(&[pos!(100, 100), pos!(150, 150), pos!(200, 100)]);
             canvas.polygon(&[pos!(200, 100), pos!(250, 150), pos!(300, 100)]);
-            canvas.xytext(pos!(0, 0), &self.msg, Default::default());
+            canvas.xy_text(pos!(0, 0), &self.msg, Default::default());
             canvas.arc(rect!(100, 100, 150, 100), PI / 2.0, PI);
             canvas.fill_pie(rect!(200, 200, 150, 100), 0.0, PI);
             canvas.pie(rect!(200, 300, 150, 100), 0.0, PI);

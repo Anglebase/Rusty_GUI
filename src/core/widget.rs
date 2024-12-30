@@ -4,7 +4,7 @@ use std::ops::{Deref, DerefMut};
 
 use super::Ele;
 
-/// This struct is the wapper of GUI element.
+/// This struct is the wrapper of GUI element.
 /// It contains the pointer to the underlying element and the address of the widget.
 pub struct Widget<T: Ele> {
     _data: Box<(Box<dyn Ele>, bool)>,

@@ -65,7 +65,7 @@ pub(super) unsafe extern "system" fn winproc(
             *window_count += 1;
         }
         let mut ent = TRACKMOUSEEVENT {
-            cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
+            cbSize: size_of::<TRACKMOUSEEVENT>() as u32,
             dwFlags: TME_HOVER | TME_LEAVE,
             hwndTrack: hwnd,
             dwHoverTime: 0,
@@ -132,7 +132,7 @@ pub(super) unsafe extern "system" fn winproc(
             let event = Event::MouseMoved { pos, mk };
             obj.on_event(&event);
             let mut tme = TRACKMOUSEEVENT {
-                cbSize: std::mem::size_of::<TRACKMOUSEEVENT>() as u32,
+                cbSize: size_of::<TRACKMOUSEEVENT>() as u32,
                 dwFlags: TME_HOVER | TME_LEAVE,
                 hwndTrack: hwnd,
                 dwHoverTime: 1,
@@ -189,14 +189,14 @@ pub(super) unsafe extern "system" fn winproc(
         WM_HOTKEY => {
             let mod_key = lparam & 0xffff;
             let vk = (lparam >> 16) & 0xffff;
-            let mut hflags = HotKeyFlags::default();
-            hflags.alt = (mod_key & MOD_ALT) != 0;
-            hflags.ctrl = (mod_key & MOD_CONTROL) != 0;
-            hflags.shift = (mod_key & MOD_SHIFT) != 0;
-            hflags.win = (mod_key & MOD_WIN) != 0;
+            let mut flags = HotKeyFlags::default();
+            flags.alt = (mod_key & MOD_ALT) != 0;
+            flags.ctrl = (mod_key & MOD_CONTROL) != 0;
+            flags.shift = (mod_key & MOD_SHIFT) != 0;
+            flags.win = (mod_key & MOD_WIN) != 0;
             let event = Event::HotKey {
                 key: vk_to_key(vk as _),
-                modifiers: hflags,
+                modifiers: flags,
             };
             obj.on_event(&event);
             return 0;
@@ -290,7 +290,7 @@ pub unsafe extern "system" fn enum_windows_callback(hwnd: HWND, lparam: LPARAM) 
     let ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut (Box<dyn Ele>, bool);
     let obj = if ptr.is_null() {
         return 0;
-    }else{
+    } else {
         ptr.as_mut().unwrap().0.as_mut()
     };
     let callback = lparam as *mut Box<dyn FnMut(&mut dyn Ele)>;

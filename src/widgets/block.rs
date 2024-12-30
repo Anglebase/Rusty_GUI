@@ -1,8 +1,8 @@
 use crate::*;
 
-/// This structrue is the simplest widget's implementation. It is a window with no content.
+/// This structure is the simplest widget's implementation. It is a window with no content.
 /// It is a template to implement other widgets.
-/// Widget must have a feild of type `Window` and implement `AsWindow` trait.
+/// Widget must have a field of type `Window` and implement `AsWindow` trait.
 /// And must implement `Drawable` and `EventListener` trait.
 pub struct Block {
     this: Window,
@@ -20,7 +20,7 @@ impl Block {
 }
 
 default_userdata!(Block);
-default_aswindow!(Block, this);
+default_as_window!(Block, this);
 
 impl Drawable for Block {
     fn draw(&mut self, canvas: &mut crate::Canvas) {

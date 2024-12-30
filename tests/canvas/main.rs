@@ -7,7 +7,7 @@ fn main() {
     let block = Block::new(rect!(50, 50, 800, 600), None);
     let mut btn = PushButton::new("Button1", rect!(50, 50, 100, 50), block.as_window());
 
-    btn.pushdown.add(
+    btn.press.add(
         "click",
         Responder::new(|s: &bool| {
             println!("Button clicked: {}", s);

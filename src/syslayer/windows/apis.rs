@@ -377,12 +377,6 @@ pub fn set_window_style(hwnd: *mut c_void, style: WindowStyle) {
     if style.resize {
         style_ |= WS_THICKFRAME;
     }
-    // if style.hscroll {
-    //     style_ |= WS_HSCROLL;
-    // }
-    // if style.vscroll {
-    //     style_ |= WS_VSCROLL;
-    // }
     if style.sysmenu {
         style_ |= WS_SYSMENU;
     }
@@ -392,7 +386,7 @@ pub fn set_window_style(hwnd: *mut c_void, style: WindowStyle) {
     if style.maxbox {
         style_ |= WS_MAXIMIZEBOX;
     }
-    let exstyle = 0;
+    let ex_style = 0;
     if style.topmost {
         unsafe {
             SetWindowPos(hwnd as _, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
@@ -400,13 +394,13 @@ pub fn set_window_style(hwnd: *mut c_void, style: WindowStyle) {
     }
     unsafe {
         SetWindowLongW(hwnd as _, GWL_STYLE, style_ as _);
-        SetWindowLongW(hwnd as _, GWL_EXSTYLE, exstyle as _);
+        SetWindowLongW(hwnd as _, GWL_EXSTYLE, ex_style as _);
     }
 }
 
 pub fn get_window_style(hwnd: *mut c_void) -> WindowStyle {
     let style = unsafe { GetWindowLongW(hwnd as _, GWL_STYLE) as u32 };
-    let exstyle = unsafe { GetWindowLongW(hwnd as _, GWL_EXSTYLE) as u32 };
+    let ex_style = unsafe { GetWindowLongW(hwnd as _, GWL_EXSTYLE) as u32 };
     let mut style_ = WindowStyle::default();
     if style & WS_BORDER != 0 {
         style_.border = true;
@@ -420,12 +414,6 @@ pub fn get_window_style(hwnd: *mut c_void) -> WindowStyle {
     if style & WS_THICKFRAME != 0 {
         style_.resize = true;
     }
-    // if style & WS_HSCROLL != 0 {
-    //     style_.hscroll = true;
-    // }
-    // if style & WS_VSCROLL != 0 {
-    //     style_.vscroll = true;
-    // }
     if style & WS_SYSMENU != 0 {
         style_.sysmenu = true;
     }
@@ -435,23 +423,8 @@ pub fn get_window_style(hwnd: *mut c_void) -> WindowStyle {
     if style & WS_MAXIMIZEBOX != 0 {
         style_.maxbox = true;
     }
-    if exstyle & WS_EX_TOPMOST != 0 {
+    if ex_style & WS_EX_TOPMOST != 0 {
         style_.topmost = true;
     }
     style_
 }
-
-// pub fn set_window_vpage(hwnd: *mut c_void, vpage: u32) {
-//     let info = SCROLLINFO {
-//         cbSize: std::mem::size_of::<SCROLLINFO>() as u32,
-//         fMask: SIF_PAGE,
-//         nMin: 0,
-//         nMax: 0,
-//         nPage: vpage,
-//         nPos: 0,
-//         nTrackPos: 0,
-//     };
-//     unsafe {
-//         SetScrollInfo(hwnd as _, SB_VERT as _, &info as *const _, 1);
-//     }
-// }

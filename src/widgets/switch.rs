@@ -1,11 +1,11 @@
 use crate::*;
 
-/// demo wigdet
+/// demo widget
 pub struct Switch {
     this: Window,
     label: String,
     status: bool,
-    bkcolor: Color,
+    backcolor: Color,
     pub state_changed: Notifier<bool>,
 }
 
@@ -16,7 +16,7 @@ impl Switch {
             label: label.to_string().clone(),
             status: false,
             state_changed: Notifier::new(),
-            bkcolor: rgb!(235),
+            backcolor: rgb!(235),
         }));
         *this.as_window_mut() = Window::new(label, rect, Some(parent), &this);
         this
@@ -24,12 +24,16 @@ impl Switch {
 }
 
 default_userdata!(Switch);
-default_aswindow!(Switch, this);
+default_as_window!(Switch, this);
 
 impl Drawable for Switch {
-    fn draw(&mut self, canvas: &mut crate::Canvas) {
+    fn draw(&mut self, canvas: &mut Canvas) {
         let rect = self.as_window().rect();
-        canvas.clear(if self.status { Color::LIGHT_GRAY } else { self.bkcolor });
+        canvas.clear(if self.status {
+            Color::LIGHT_GRAY
+        } else {
+            self.backcolor
+        });
         let fs = FontStyle {
             size: 24,
             ..Default::default()
@@ -45,21 +49,22 @@ impl Drawable for Switch {
             rect
         };
         canvas.rect_text(text_rect, &self.label, TextAlign::Center);
-        if !self.status {
-            let ls = Pen::new(PenStyle {
-                width: 2,
-                color: Color::DARK_GRAY,
-                ..Default::default()
-            });
-            canvas.set_pen(&ls);
-            canvas.line(rect.right(), rect.top(), rect.right(), rect.bottom());
-            canvas.line(rect.left(), rect.bottom(), rect.right(), rect.bottom());
+        if self.status {
+            return;
         }
+        let ls = Pen::new(PenStyle {
+            width: 2,
+            color: Color::DARK_GRAY,
+            ..Default::default()
+        });
+        canvas.set_pen(&ls);
+        canvas.line(rect.right(), rect.top(), rect.right(), rect.bottom());
+        canvas.line(rect.left(), rect.bottom(), rect.right(), rect.bottom());
     }
 }
 
 impl EventListener for Switch {
-    fn on_event(&mut self, event: &crate::Event) {
+    fn on_event(&mut self, event: &Event) {
         match event {
             Event::MouseButtonPressed {
                 button,
@@ -73,11 +78,11 @@ impl EventListener for Switch {
                 }
             }
             Event::Hover { pos: _, mk: _ } => {
-                self.bkcolor = rgb!(215);
+                self.backcolor = rgb!(215);
                 self.this.update();
             }
             Event::Leave => {
-                self.bkcolor = rgb!(235);
+                self.backcolor = rgb!(235);
                 self.this.update();
             }
             _ => {}

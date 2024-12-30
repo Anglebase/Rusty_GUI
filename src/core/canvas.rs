@@ -100,7 +100,7 @@ pub struct Font {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FontWeight {
-    Dontcare = 0,     // Don't care about the weight (default)
+    Default = 0,     // Default weight
     Thin = 100,       // Thin weight
     ExtraLight = 200, // Extra light weight
     Light = 300,      // Light weight
@@ -278,24 +278,24 @@ impl Canvas {
     /// Draw a fill pie with `rect`, `start` and `sweep`.
     /// It uses the current pen for outline and brush for fill.
     pub fn fill_pie(&self, rect: Rect, start: f32, sweep: f32) {
-        draw_fille_pie(self.hdc, rect, start, sweep);
+        draw_fill_pie(self.hdc, rect, start, sweep);
     }
 
     /// Draw a fill ellipse with `rect`.
     /// It uses the current pen for outline and brush for fill.
     pub fn fill_ellipse(&self, rect: Rect) {
-        draw_fille_ellipse(self.hdc, rect);
+        draw_fill_ellipse(self.hdc, rect);
     }
 
     /// Draw a fill circle with `pos` and `radius`.
     /// It uses the current pen for outline and brush for fill.
     pub fn fill_circle(&self, pos: Point, radius: i32) {
-        draw_fille_circle(self.hdc, pos, radius);
+        draw_fill_circle(self.hdc, pos, radius);
     }
 
     /// Draw a text with `pos` and `text`.
     /// It uses the current pen and font.
-    pub fn xytext(&self, pos: Point, text: &str, align: TextAlign) {
+    pub fn xy_text(&self, pos: Point, text: &str, align: TextAlign) {
         draw_xy_text(self.hdc, pos, text, align);
     }
 
