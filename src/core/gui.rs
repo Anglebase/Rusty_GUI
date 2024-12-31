@@ -43,6 +43,16 @@ macro_rules! default_as_window {
             }
         }
     };
+    ($def_type:ty) => {
+        impl AsWindow for $def_type {
+            fn as_window(&self) -> &Window {
+                &self.this
+            }
+            fn as_window_mut(&mut self) -> &mut Window {
+                &mut self.this
+            }
+        }
+    };
 }
 
 /// A trait for elements that can be drawn on a `Canvas`.

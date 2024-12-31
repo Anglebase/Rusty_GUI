@@ -428,3 +428,16 @@ pub fn get_window_style(hwnd: *mut c_void) -> WindowStyle {
     }
     style_
 }
+
+pub fn set_window_focus(hwnd: *mut c_void) {
+    unsafe {
+        SetFocus(hwnd as _);
+    }
+}
+
+pub fn is_window_onfocus(hwnd: *mut c_void) -> bool {
+    let h = unsafe {
+        GetFocus()
+    };
+    h == hwnd as _
+}

@@ -68,6 +68,16 @@ impl Window {
         set_window_visible(self.hwnd, visible);
     }
 
+    /// Set the focus to the window.
+    pub fn set_focus(&self) {
+        set_window_focus(self.hwnd);
+    }
+
+    /// Check if the window has focus.
+    pub fn has_focus(&self) -> bool {
+        is_window_onfocus(self.hwnd)
+    }
+
     /// Show the window and update it.
     pub fn show(&self) {
         show_and_update(self.hwnd);

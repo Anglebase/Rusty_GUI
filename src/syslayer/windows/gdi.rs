@@ -32,6 +32,13 @@ pub fn select_object(hdc: *mut c_void, obj: *mut c_void) -> *mut c_void {
     unsafe { SelectObject(hdc as _, obj as _) as *mut c_void }
 }
 
+pub fn set_current_text_color(hdc: *mut c_void, color: Color) -> Color {
+    let ret = unsafe {
+        SetTextColor(hdc as _, RGB(color.red, color.green, color.blue))
+    };
+    rgb!(GetRValue(ret), GetGValue(ret), GetBValue(ret))
+}
+
 pub fn new_pen_object(pen_style: PenStyle) -> *mut c_void {
     let end_cap = match pen_style.cap_style {
         CapStyle::Flat => PS_ENDCAP_FLAT,
@@ -315,14 +322,14 @@ pub fn draw_xy_text(hdc: *mut c_void, pos: Point, text: &str, align: TextAlign) 
     let (x, y) = (pos.x, pos.y);
     let align = match align {
         TextAlign::LeftTop => TA_LEFT | TA_TOP,
-        TextAlign::LeftMiddle => TA_LEFT | VTA_CENTER,
         TextAlign::LeftBottom => TA_LEFT | TA_BOTTOM,
         TextAlign::CenterTop => TA_CENTER | TA_TOP,
-        TextAlign::Center => TA_CENTER | VTA_CENTER,
         TextAlign::CenterBottom => TA_CENTER | TA_BOTTOM,
         TextAlign::RightTop => TA_RIGHT | TA_TOP,
-        TextAlign::RightMiddle => TA_RIGHT | VTA_CENTER,
         TextAlign::RightBottom => TA_RIGHT | TA_BOTTOM,
+        _ => {
+            panic!("Unsupported text align {:?}", align);
+        }
     };
     unsafe {
         SetTextAlign(hdc as _, align);

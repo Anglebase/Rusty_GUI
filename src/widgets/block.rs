@@ -20,7 +20,7 @@ impl Block {
 }
 
 default_userdata!(Block);
-default_as_window!(Block, this);
+default_as_window!(Block);
 
 impl Drawable for Block {
     fn draw(&mut self, canvas: &mut crate::Canvas) {

@@ -177,7 +177,7 @@ pub struct Canvas {
 }
 
 impl Canvas {
-    /// Clear current window content with `color`.
+    /// Clear current widget content with `color`.
     pub fn clear(&self, color: Color) {
         clear_device(self.hdc, self.rect, color);
     }
@@ -201,6 +201,10 @@ impl Canvas {
         Font {
             hfont: select_object(self.hdc, font.hfont) as *mut c_void,
         }
+    }
+
+    pub fn set_text_color(&self, color: Color) -> Color {
+        set_current_text_color(self.hdc, color)
     }
 
     /// Draw a line from `(x1, y1)` to `(x2, y2)`.

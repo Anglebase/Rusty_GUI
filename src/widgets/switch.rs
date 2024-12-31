@@ -24,7 +24,7 @@ impl Switch {
 }
 
 default_userdata!(Switch);
-default_as_window!(Switch, this);
+default_as_window!(Switch);
 
 impl Drawable for Switch {
     fn draw(&mut self, canvas: &mut Canvas) {

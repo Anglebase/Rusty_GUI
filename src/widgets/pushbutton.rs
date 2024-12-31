@@ -24,7 +24,7 @@ impl PushButton {
 }
 
 default_userdata!(PushButton);
-default_as_window!(PushButton, this);
+default_as_window!(PushButton);
 
 impl Drawable for PushButton {
     fn draw(&mut self, canvas: &mut crate::Canvas) {
