@@ -10,7 +10,6 @@ mod tests {
     }
 
     default_as_window!(CanvasBencher, this);
-    default_userdata!(CanvasBencher);
 
     impl CanvasBencher {
         fn new() -> Widget<Self> {

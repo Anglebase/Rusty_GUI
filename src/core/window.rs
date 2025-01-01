@@ -1,6 +1,7 @@
 //! This file is containing the implementation of the Window struct and its methods.
 
 use std::any::Any;
+use std::sync::Arc;
 use std::{os::raw::c_void, ptr::null_mut};
 use winapi::um::winuser::EnumChildWindows;
 
@@ -14,7 +15,7 @@ use super::{Ele, KeyCode, Widget};
 #[derive(Clone)]
 pub struct Window {
     pub(crate) hwnd: *mut c_void,
-    userdata: Option<dyn Any>,
+    userdata: Option<Arc<dyn Any>>,
 }
 
 impl Default for Window {
@@ -141,19 +142,18 @@ impl Window {
     /// Set the window style.
     /// # *INSTABILITY* !!!
     /// # *UNTESTED* !!!
-    pub fn set_style(&self, style: WindowStyle) {
+    pub unsafe fn set_style(&self, style: WindowStyle) {
         set_window_style(self.hwnd, style);
     }
 
     /// Get the window style.
     /// # *INSTABILITY* !!!
     /// # *UNTESTED* !!!
-    pub fn get_style(&self) -> WindowStyle {
+    pub unsafe fn get_style(&self) -> WindowStyle {
         get_window_style(self.hwnd)
     }
 
     /// For each child window of the window, call the given function.
-    /// It usually used with trait `Userdata`.
     pub fn foreach(&self, mut f: Box<dyn FnMut(&mut dyn Ele)>) {
         unsafe {
             EnumChildWindows(
@@ -164,16 +164,34 @@ impl Window {
         }
     }
 
-    pub fn set_userdata<T: 'static>(&mut self, data: T) {
-        self.userdata = Some(data);
+    /// Read the data stored in the window.
+    /// If `T` is same as the type stored in the window, return the data.
+    /// Otherwise, return None.
+    /// ```
+    /// use rusty_gui::*;
+    ///
+    /// let parent = Block::new(rect!(50, 50, 800, 600), None);
+    /// let mut child = Block::new(rect!(100, 100, 200, 200), None);
+    ///
+    /// child.as_window_mut().write_data("Hello, world!".to_string());
+    ///
+    /// parent.as_window().foreach(Box::new(|w|{
+    ///     if let Some(data) = w.as_window().read_data::<String>() {
+    ///         assert_eq!(data, "Hello, world!".to_string());
+    ///     }
+    /// }));
+    /// ```
+    pub fn read_data<T: Clone + 'static>(&self) -> Option<T> {
+        let userdata = self.userdata.as_ref().map(|d| d.clone());
+        userdata.map(|d| -> Option<T> {
+            let d = d.downcast_ref::<T>()?;
+            Some(d.clone())
+        })?
     }
-}
 
-impl Userdata for Window {
-    fn userdata(&self) -> Option<&dyn Any> {
-        self.userdata.as_ref()
-    }
-    fn userdata_mut(&mut self) -> Option<&mut dyn Any> {
-        self.userdata.as_mut()
+    /// Write the data to the window.
+    /// It will overwrite any existing data.
+    pub fn write_data<T: Clone + 'static>(&mut self, data: T) {
+        self.userdata = Some(Arc::new(data));
     }
 }
