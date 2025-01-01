@@ -23,7 +23,6 @@ impl PushButton {
     }
 }
 
-default_userdata!(PushButton);
 default_as_window!(PushButton);
 
 impl Drawable for PushButton {

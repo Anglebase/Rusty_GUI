@@ -23,7 +23,6 @@ impl Switch {
     }
 }
 
-default_userdata!(Switch);
 default_as_window!(Switch);
 
 impl Drawable for Switch {

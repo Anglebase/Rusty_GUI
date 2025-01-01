@@ -19,7 +19,6 @@ impl Block {
     }
 }
 
-default_userdata!(Block);
 default_as_window!(Block);
 
 impl Drawable for Block {

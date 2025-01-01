@@ -1,7 +1,7 @@
 //! This file is containing the implementation of the Window struct and its methods.
 
+use std::any::Any;
 use std::{os::raw::c_void, ptr::null_mut};
-
 use winapi::um::winuser::EnumChildWindows;
 
 use crate::*;
@@ -14,12 +14,16 @@ use super::{Ele, KeyCode, Widget};
 #[derive(Clone)]
 pub struct Window {
     pub(crate) hwnd: *mut c_void,
+    userdata: Option<dyn Any>,
 }
 
 impl Default for Window {
     /// This method returns an empty Window struct as a placeholder.
     fn default() -> Self {
-        Self { hwnd: null_mut() }
+        Self {
+            hwnd: null_mut(),
+            userdata: None,
+        }
     }
 }
 
@@ -29,6 +33,7 @@ impl Window {
     pub fn new<T: Ele>(title: &str, rect: Rect, parent: Option<&Window>, wp: &Widget<T>) -> Self {
         Self {
             hwnd: create_window(title, rect, parent, wp) as _,
+            userdata: None,
         }
     }
 
@@ -157,5 +162,18 @@ impl Window {
                 &mut f as *mut _ as _,
             );
         }
+    }
+
+    pub fn set_userdata<T: 'static>(&mut self, data: T) {
+        self.userdata = Some(data);
+    }
+}
+
+impl Userdata for Window {
+    fn userdata(&self) -> Option<&dyn Any> {
+        self.userdata.as_ref()
+    }
+    fn userdata_mut(&mut self) -> Option<&mut dyn Any> {
+        self.userdata.as_mut()
     }
 }

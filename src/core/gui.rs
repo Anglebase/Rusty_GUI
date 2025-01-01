@@ -3,28 +3,12 @@ use crate::{Canvas, Event, Window};
 /// A trait for userdata that can be attached to any GUI element.
 /// It provides an interface for defining custom data on the element.
 pub trait Userdata {
-    fn as_any(&self) -> Option<&dyn std::any::Any>;
-    fn as_any_mut(&mut self) -> Option<&mut dyn std::any::Any>;
-}
-
-/// A macro for defining a default implementation of the `Userdata` trait for a given type.
-/// This implementation returns `None` for both `as_any` and `as_any_mut` methods.
-#[macro_export]
-macro_rules! default_userdata {
-    ($def_type:ty) => {
-        impl Userdata for $def_type {
-            fn as_any(&self) -> Option<&dyn std::any::Any> {
-                None
-            }
-            fn as_any_mut(&mut self) -> Option<&mut dyn std::any::Any> {
-                None
-            }
-        }
-    };
+    fn userdata(&self) -> Option<&dyn std::any::Any>;
+    fn userdata_mut(&mut self) -> Option<&mut dyn std::any::Any>;
 }
 
 /// A trait for elements that can be used as a `Window`.
-pub trait AsWindow: Userdata {
+pub trait AsWindow {
     fn as_window(&self) -> &Window;
     fn as_window_mut(&mut self) -> &mut Window;
 }

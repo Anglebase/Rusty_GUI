@@ -19,7 +19,6 @@ pub struct LineEdit {
     pub text: Font,
 }
 
-default_userdata!(LineEdit);
 default_as_window!(LineEdit);
 
 impl Drawable for LineEdit {
