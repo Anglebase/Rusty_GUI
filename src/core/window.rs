@@ -89,7 +89,7 @@ impl Window {
         show_and_update(self.hwnd);
     }
 
-    /// Hide the window and update it.
+    /// Hide the window.
     pub fn hide(&self) {
         self.set_visible(false);
     }
@@ -137,20 +137,6 @@ impl Window {
     /// Kill a timer for the window.
     pub fn kill_timer(&self, id: usize) {
         kill_window_timer(self.hwnd, id);
-    }
-
-    /// Set the window style.
-    /// # *INSTABILITY* !!!
-    /// # *UNTESTED* !!!
-    pub unsafe fn set_style(&self, style: WindowStyle) {
-        set_window_style(self.hwnd, style);
-    }
-
-    /// Get the window style.
-    /// # *INSTABILITY* !!!
-    /// # *UNTESTED* !!!
-    pub unsafe fn get_style(&self) -> WindowStyle {
-        get_window_style(self.hwnd)
     }
 
     /// For each child window of the window, call the given function.
