@@ -50,35 +50,35 @@ mod tests {
     fn test_rect_contains_happy_path() {
         let rect1 = rect!(0, 0, 10, 10);
         let rect2 = rect!(2, 2, 6, 6);
-        assert!(rect1.contanins(&rect2));
+        assert!(rect1.contains(&rect2));
     }
 
     #[test]
     fn test_rect_contains_edge_case_no_overlap() {
         let rect1 = rect!(0, 0, 5, 5);
         let rect2 = rect!(6, 6, 5, 5);
-        assert!(!rect1.contanins(&rect2));
+        assert!(!rect1.contains(&rect2));
     }
 
     #[test]
     fn test_rect_contains_edge_case_partial_overlap() {
         let rect1 = rect!(0, 0, 5, 5);
         let rect2 = rect!(4, 4, 5, 5);
-        assert!(!rect1.contanins(&rect2));
+        assert!(!rect1.contains(&rect2));
     }
 
     #[test]
     fn test_rect_contains_edge_case_same_size() {
         let rect1 = rect!(0, 0, 5, 5);
         let rect2 = rect!(0, 0, 5, 5);
-        assert!(rect1.contanins(&rect2));
+        assert!(rect1.contains(&rect2));
     }
 
     #[test]
     fn test_rect_contains_edge_case_larger_rect() {
         let rect1 = rect!(0, 0, 5, 5);
         let rect2 = rect!(0, 0, 10, 10);
-        assert!(!rect1.contanins(&rect2));
+        assert!(!rect1.contains(&rect2));
     }
 
     #[test]

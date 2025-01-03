@@ -46,7 +46,7 @@ macro_rules! rect {
     };
 }
 
-use std::ops::{Add, Sub};
+use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 impl Add for Point {
     type Output = Self;
@@ -76,7 +76,28 @@ impl Sub for Size {
     }
 }
 
-use std::ops::{Div, Mul};
+impl AddAssign for Point {
+    fn add_assign(&mut self, other: Self) {
+        *self = *self + other;
+    }
+}
+impl SubAssign for Point {
+    fn sub_assign(&mut self, other: Self) {
+        *self = *self - other;
+    }
+}
+impl AddAssign for Size {
+    fn add_assign(&mut self, other: Self) {
+        *self = *self + other;
+    }
+}
+impl SubAssign for Size {
+    fn sub_assign(&mut self, other: Self) {
+        *self = *self - other;
+    }
+}
+
+use std::ops::{Div, DivAssign, Mul, MulAssign};
 
 impl Mul<f32> for Point {
     type Output = Self;
@@ -114,6 +135,27 @@ impl Div<f32> for Size {
     }
 }
 
+impl MulAssign<f32> for Point {
+    fn mul_assign(&mut self, other: f32) {
+        *self = *self * other;
+    }
+}
+impl DivAssign<f32> for Point {
+    fn div_assign(&mut self, other: f32) {
+        *self = *self / other;
+    }
+}
+impl DivAssign<f32> for Size {
+    fn div_assign(&mut self, other: f32) {
+        *self = *self / other;
+    }
+}
+impl MulAssign<f32> for Size {
+    fn mul_assign(&mut self, other: f32) {
+        *self = *self * other;
+    }
+}
+
 impl Point {
     pub fn distance(self, other: &Point) -> f32 {
         let dx = (self.x - other.x) as f32;
@@ -137,7 +179,7 @@ impl Size {
 
 impl Rect {
     /// If another rectangle is completely contained by it, return true.
-    pub fn contanins(&self, other: &Rect) -> bool {
+    pub fn contains(&self, other: &Rect) -> bool {
         if self.size.width < other.size.width || self.size.height < other.size.height {
             return false;
         }
@@ -200,10 +242,7 @@ impl Rect {
         pos!(self.pos.x, self.pos.y + self.size.height)
     }
     pub fn bottom_right(&self) -> Point {
-        pos!(
-            self.pos.x + self.size.width,
-            self.pos.y + self.size.height,
-        )
+        pos!(self.pos.x + self.size.width, self.pos.y + self.size.height,)
     }
 }
 
