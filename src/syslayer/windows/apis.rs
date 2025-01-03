@@ -345,7 +345,8 @@ pub fn register_hotkey_for_window(
     let modifiers = if modifiers.alt { MOD_ALT } else { 0 }
         | if modifiers.ctrl { MOD_CONTROL } else { 0 }
         | if modifiers.shift { MOD_SHIFT } else { 0 }
-        | if modifiers.win { MOD_WIN } else { 0 };
+        | if modifiers.win { MOD_WIN } else { 0 }
+        | MOD_NOREPEAT;
     unsafe {
         RegisterHotKey(hwnd as _, id, modifiers as u32, vk as _);
     }
@@ -363,6 +364,7 @@ pub fn kill_window_timer(hwnd: *mut c_void, id: usize) {
     }
 }
 
+#[allow(unused)]
 pub fn set_window_style(hwnd: *mut c_void, style: WindowStyle) {
     let mut style_ = 0;
     if style.border {
@@ -398,6 +400,7 @@ pub fn set_window_style(hwnd: *mut c_void, style: WindowStyle) {
     }
 }
 
+#[allow(unused)]
 pub fn get_window_style(hwnd: *mut c_void) -> WindowStyle {
     let style = unsafe { GetWindowLongW(hwnd as _, GWL_STYLE) as u32 };
     let ex_style = unsafe { GetWindowLongW(hwnd as _, GWL_EXSTYLE) as u32 };
