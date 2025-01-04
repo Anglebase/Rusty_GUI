@@ -178,11 +178,52 @@ pub struct Canvas {
 
 impl Canvas {
     /// Clear current widget content with `color`.
+    /// # Example
+    /// ```
+    /// use rusty_gui::*;
+    /// 
+    /// struct YouWindow {
+    ///     this: Window,
+    ///     // ...
+    /// }
+    /// 
+    /// default_as_window!(YouWindow);
+    /// 
+    /// impl Drawable for YouWindow {
+    ///     fn draw(&mut self, canvas: &mut Canvas) {
+    ///         canvas.clear(Color::WHITE); // Clear the canvas with white color
+    ///     }
+    /// }
+    /// ```
     pub fn clear(&self, color: Color) {
         clear_device(self.hdc, self.rect, color);
     }
 
     /// Set current pen to `pen`.
+    /// # Example
+    /// ```
+    /// use rusty_gui::*;
+    ///
+    /// struct YouWindow {
+    ///     this: Window,
+    ///     // ...
+    /// }
+    ///
+    /// default_as_window!(YouWindow);
+    ///
+    /// impl Drawable for YouWindow {
+    ///     fn draw(&mut self, canvas: &mut Canvas) {
+    ///         let pen = Pen::new(PenStyle {
+    ///             line_style: LineStyle::Solid,
+    ///             width: 5,
+    ///             join_style: JoinStyle::Miter,
+    ///             cap_style: CapStyle::Flat,
+    ///             ..PenStyle::default()
+    ///         }); // Create a new pen with custom style
+    ///         canvas.set_pen(&pen); // Set the current pen to the new pen
+    ///     }
+    /// }
+    /// ```
     pub fn set_pen(&self, pen: &Pen) -> Pen {
         Pen {
             hpen: select_object(self.hdc, pen.hpen) as *mut c_void,
@@ -190,6 +231,24 @@ impl Canvas {
     }
 
     /// Set current brush to `brush`.
+    /// # Example
+    /// ```
+    /// use rusty_gui::*;
+    ///
+    /// struct YouWindow {
+    ///     this: Window,
+    ///     // ...
+    /// }
+    ///
+    /// default_as_window!(YouWindow);
+    ///
+    /// impl Drawable for YouWindow {
+    ///     fn draw(&mut self, canvas: &mut Canvas) {
+    ///         let brush = Brush::new(Color::RED); // Create a new brush with red color
+    ///         canvas.set_brush(&brush); // Set the current brush to the new brush
+    ///     }
+    /// }
+    /// ```
     pub fn set_brush(&self, brush: &Brush) -> Brush {
         Brush {
             hbrush: select_object(self.hdc, brush.hbrush) as *mut c_void,
@@ -197,12 +256,53 @@ impl Canvas {
     }
 
     /// Set current font to `font`.
+    /// # Example
+    /// ```
+    /// use rusty_gui::*;
+    ///
+    /// struct YouWindow {
+    ///     this: Window,
+    ///     // ...
+    /// }
+    ///
+    /// default_as_window!(YouWindow);
+    ///
+    /// impl Drawable for YouWindow {
+    ///     fn draw(&mut self, canvas: &mut Canvas) {
+    ///         let font = Font::new(FontStyle {
+    ///             size: 20,
+    ///             weight: FontWeight::Bold,
+    ///             italic: true,
+    ///             ..FontStyle::default()
+    ///         });
+    ///         canvas.set_font(&font); // Set the current font to the new font
+    ///     }
+    /// }
+    /// ```
     pub fn set_font(&self, font: &Font) -> Font {
         Font {
             hfont: select_object(self.hdc, font.hfont) as *mut c_void,
         }
     }
-
+    
+    /// Set the text color to `color`.
+    /// # Example
+    /// ```
+    /// use rusty_gui::*;
+    ///
+    /// struct YouWindow {
+    ///     this: Window,
+    ///     // ...
+    /// }
+    ///
+    /// default_as_window!(YouWindow);
+    ///
+    /// impl Drawable for YouWindow {
+    ///     fn draw(&mut self, canvas: &mut Canvas) {
+    ///         canvas.set_text_color(Color::RED); // Set the text color to black
+    ///     }
+    /// }
+    /// ```
     pub fn set_text_color(&self, color: Color) -> Color {
         set_current_text_color(self.hdc, color)
     }
@@ -298,13 +398,13 @@ impl Canvas {
     }
 
     /// Draw a text with `pos` and `text`.
-    /// It uses the current pen and font.
+    /// It uses the current text color, and font.
     pub fn xy_text(&self, pos: Point, text: &str, align: TextAlign) {
         draw_xy_text(self.hdc, pos, text, align);
     }
 
     /// Draw a text with `rect` and `text`.
-    /// It uses the current pen and font.
+    /// It uses the current text color, and font.
     pub fn rect_text(&self, rect: Rect, text: &str, align: TextAlign) {
         draw_rect_text(self.hdc, rect, text, align);
     }

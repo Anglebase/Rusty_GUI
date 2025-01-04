@@ -1,100 +1,87 @@
 # Rusty GUI
 
-This is a simple GUI library for Rust. It only support Windows for now.
+`rusty_gui` aims to create a low entry threshold Rust GUI framework. It mostly uses a simplified API style, making it more intuitive and simple to use. It is very friendly to Rust's beginners, and you can even learn some programming ideas in Rust that are different from other languages through it. It also can help beginners write graphical programs to enhance their skills.
 
-*This is the first pre-release version of the library.*
+## Features
 
-# Features
++ **Low Entry Threshold**: `rusty_gui` is designed to be easy to use for beginners. It uses a simplified API style, making it more intuitive and simple to use.
++ **Easy to learn and use**: `rusty_gui` is designed to be easy to learn and use. It is very friendly to Rust's beginners, and you can even learn some programming ideas in Rust that are different from other languages through it.
++ **Customizable**: `rusty_gui` is designed to be customizable. You can easily create your own widgets, themes, and other components to fit your needs.
 
-- **Simple** : The API is designed to be simple and easy to use.
+## Usage
 
-# Usage
-
-To use this library, add the following to your `Cargo.toml` file:
+To use `rusty_gui`, add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-rusty_gui = "0.1.2"
+rusty_gui = "0.1"
+```
+Or use the following command to add it to your project:
+
+```
+cargo add rusty_gui
 ```
 
-Or run `cargo add rusty_gui` in your terminal.
+## Demo
 
-# Example
-
-A simple example of defining and creating a window and showing it:
+Here is a simple demo of `rusty_gui`:
 ```rust
-// import the module
 use rusty_gui::*;
 
-// define a struct for your window
 struct MyWindow {
     this: Window,
-    // ... other fields you need.
+    content: String,
 }
 
-// implement the AsWindow trait for your struct
-impl AsWindow for MyWindow {
-    fn as_window(&self) -> &Window {
-        &self.this
-    }
-    fn as_window_mut(&mut self) -> &mut Window {
-        &mut self.this
-    }
-}
+default_as_window!(MyWindow);
 
-// implement the Drawable trait for your struct
 impl Drawable for MyWindow {
     fn draw(&mut self, canvas: &mut Canvas) {
-        canvas.clear(rgb!(120, 173, 255));
-        let font = Font::new(FontStyle {
-            size: 32,
-            ..Default::default()
-        });
-        canvas.set_font(&font);
-        canvas.rect_text(self.as_window().rect(), "Hello, RustyGUI!");
+        canvas.clear(Color::WHITE);
+        let style = FontStyle {
+            size: 24,
+            ..FontStyle::default()
+        };
+        canvas.set_font(&Font::new(style));
+        canvas.rect_text(self.this.rect(), &self.content, TextAlign::Center);
     }
 }
 
-// implement the EventListener trait for your struct
 impl EventListener for MyWindow {
     fn on_event(&mut self, event: &Event) {
-        if let Event::MouseButtonPressed {
-            button,
-            pos: _,
-            mk: _,
-        } = event
-        {
-            if *button == MouseButton::Left {
-                println!("You Clicked Me!");
-            }
-        }
+        let _ = event;
     }
 }
 
 impl MyWindow {
-    // implement the new method for your struct, It must return a Widget<Self>.
-    fn new(rect: Rect) -> Widget<Self> {
-        let mut this = Widget::new(Box::new(Self {
+    fn new(content: &str, rect: Rect) -> Widget<Self> {
+        let it = Box::new(Self {
             this: Window::default(),
-        }));
-        *this.as_window_mut() = Window::new("MyWindow", rect, None, &this);
-        this
+            content: String::from(content),
+        });
+        let mut ret = Widget::new(it);
+        ret.this = Window::new("MyWindow", rect, None, &ret);
+        ret
     }
 }
 
 fn main() {
-    // create an Application object.
     let app = Application::new(true);
 
-    // create and show your window.
-    let window = MyWindow::new(rect!(50, 50, 800, 600));
+    let window = MyWindow::new("Hello, This is Rusty GUI!", rect!(50, 50, 800, 600));
     window.as_window().show();
 
-    // run the application.
     app.exec();
 }
 ```
 
-# License
+## License
 
-This project is licensed under the Apache-2.0 license.
+This library is licensed under the Apache 2.0 license.
+
+## More Information
+
+If you want to learn more about `rusty_gui`, you can read the [learning guide](https://github.com/Anglebase/Rusty_GUI/blob/master/LEARNING.md).
+If you want to contribute to `rusty_gui`, you can read the [contribution guide](https://github.com/Anglebase/Rusty_GUI/blob/master/CONTRIBUTING.md).
+
+For more information, please visit the [GitHub repository](https://github.com/Anglebase/Rusty_GUI.git).
