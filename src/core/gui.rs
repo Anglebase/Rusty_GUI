@@ -1,3 +1,4 @@
+use std::any::Any;
 use crate::{Canvas, Event, Window};
 
 /// A trait for elements that can be used as a `Window`.
@@ -55,6 +56,9 @@ pub trait Drawable: AsWindow {
 /// A trait for elements that can listen to events.
 pub trait EventListener: AsWindow {
     fn on_event(&mut self, event: &Event);
+    fn on_message(&mut self, msg: Box<dyn Any>){
+        let _ = msg;
+    }
 }
 
 /// Automatically implements this trait for any type that implements `Drawable` and `EventListener`.

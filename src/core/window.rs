@@ -3,8 +3,6 @@
 use std::any::Any;
 use std::sync::Arc;
 use std::{os::raw::c_void, ptr::null_mut};
-use winapi::um::winuser::EnumChildWindows;
-
 use crate::*;
 
 use super::{Ele, KeyCode, Widget};
@@ -16,6 +14,12 @@ use super::{Ele, KeyCode, Widget};
 pub struct Window {
     pub(crate) hwnd: *mut c_void,
     userdata: Option<Arc<dyn Any>>,
+}
+
+// It is used to identify the window.
+#[derive(Clone, Copy)]
+pub struct WindowID {
+    pub(crate) hwnd: *mut c_void,
 }
 
 impl Default for Window {
@@ -322,15 +326,9 @@ impl Window {
     /// ```
     /// # Panics
     /// If the window is default, it will panic.
-    pub fn foreach(&self, mut f: Box<dyn FnMut(&mut dyn Ele)>) {
+    pub fn foreach<F: FnMut(&mut dyn Ele) + 'static>(&self, f: F) {
         self.check_hwnd();
-        unsafe {
-            EnumChildWindows(
-                self.hwnd as _,
-                Some(enum_windows_callback),
-                &mut f as *mut _ as _,
-            );
-        }
+        for_each_child_window(self.hwnd, Box::new(f));
     }
 
     /// Read the data stored in the window.
@@ -369,5 +367,34 @@ impl Window {
     pub fn write_data<T: Clone + 'static>(&mut self, data: T) {
         self.check_hwnd();
         self.userdata = Some(Arc::new(data));
+    }
+    
+    /// Get the identifier of the window.
+    /// It can be used to post message to the window.
+    pub fn get_id(&self) -> WindowID {
+        self.check_hwnd();
+        WindowID { hwnd: self.hwnd }
+    }
+    
+    /// Post a message to the window.
+    /// The `msg` is usually an enum of user-defined message.
+    /// The `id` is the identifier of the window. It can be obtained by calling `get_id()` method.
+    /// # Example
+    /// ```
+    /// use rusty_gui::*;
+    ///
+    /// enum MyMessage {
+    ///     Quit,
+    ///     //...
+    /// }
+    /// 
+    /// let block = Block::new(rect!(50,50,800,600), None);
+    /// let id = block.as_window().get_id();
+    ///
+    /// block.as_window().post(id, Box::new(MyMessage::Quit));
+    /// ```
+    /// You can handle the message in the `on_message()` method of the window.
+    pub fn post(id: WindowID, msg: Box<dyn Any>) {
+        send_user_def_msg(id.hwnd, Box::new(msg));
     }
 }

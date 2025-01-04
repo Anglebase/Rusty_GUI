@@ -1,4 +1,5 @@
-use crate::{rect, KeyCode, Rect};
+use crate::{rect, Ele, KeyCode, Rect};
+use std::any::Any;
 use std::{
     os::raw::c_void,
     ptr::{null, null_mut},
@@ -439,8 +440,22 @@ pub fn set_window_focus(hwnd: *mut c_void) {
 }
 
 pub fn is_window_onfocus(hwnd: *mut c_void) -> bool {
-    let h = unsafe {
-        GetFocus()
-    };
+    let h = unsafe { GetFocus() };
     h == hwnd as _
+}
+
+pub fn for_each_child_window(hwnd: *mut c_void, mut f: Box<dyn FnMut(&mut dyn Ele)>) {
+    unsafe {
+        EnumChildWindows(
+            hwnd as _,
+            Some(enum_windows_callback),
+            &mut f as *mut _ as _,
+        );
+    }
+}
+
+pub fn send_user_def_msg(hwnd: *mut c_void, msg: Box<Box<dyn Any>>) {
+    unsafe {
+        SendMessageW(hwnd as _, USER_DEF_MSG, 0, Box::into_raw(msg) as _);
+    }
 }

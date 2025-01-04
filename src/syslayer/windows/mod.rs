@@ -4,9 +4,8 @@ mod gdi;
 mod winproc;
 
 use std::ptr::null_mut;
-use winproc::winproc;
 
-pub(crate) use winproc::enum_windows_callback;
+pub(crate) use winproc::*;
 pub(crate) use apis::*;
 pub(crate) use basic::*;
 pub(crate) use gdi::*;

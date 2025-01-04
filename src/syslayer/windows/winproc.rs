@@ -1,5 +1,5 @@
 use std::{os::raw::c_void, sync::Mutex};
-
+use std::any::Any;
 use winapi::{
     shared::{
         minwindef::{BOOL, LPARAM, LRESULT, UINT, WPARAM},
@@ -16,6 +16,7 @@ use crate::*;
 use super::{get_rect, notifier_exit};
 
 static mut WINDOW_COUNT: Mutex<u32> = Mutex::new(0);
+pub const USER_DEF_MSG: UINT = WM_USER + 1;  // 
 
 macro_rules! wparam_to_mkey {
     ($wparam:expr) => {
@@ -234,6 +235,10 @@ pub(super) unsafe extern "system" fn winproc(
                 *hover = true;
             }
             return 0;
+        }
+        USER_DEF_MSG => {
+            let any_obj_ptr = Box::from_raw(lparam as *mut Box<dyn Any>);
+            obj.on_message(*any_obj_ptr);
         }
         _ => {}
     };
