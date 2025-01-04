@@ -8,6 +8,8 @@ use std::{
 };
 
 /// A wrapper of callback function.
+/// The generic parameter `T` is the type of data passed to the callback function.
+/// It will be passed as an immutable reference to the callback function.
 pub struct Responder<T> {
     f: Rc<RefCell<dyn FnMut(&T)>>,
 }
@@ -34,6 +36,9 @@ impl<T> Responder<T> {
 }
 
 /// A struct to manage callback functions.
+/// The generic parameter `T` is the type of data passed to the callback functions.
+/// It will be passed as an immutable reference to the callback functions.
+/// If you want to pass multiple data to the callback functions, you can wrap them in a tuple.
 pub struct Notifier<T> {
     responders: HashMap<String, Responder<T>>,
     disable: HashSet<String>,
