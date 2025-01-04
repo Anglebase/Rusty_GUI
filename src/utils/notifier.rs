@@ -35,7 +35,7 @@ impl<T> Responder<T> {
 
 /// A struct to manage callback functions.
 pub struct Notifier<T> {
-    responsers: HashMap<String, Responder<T>>,
+    responders: HashMap<String, Responder<T>>,
     disable: HashSet<String>,
 }
 
@@ -43,14 +43,14 @@ impl<T> Notifier<T> {
     /// Create a new `Notifier` instance.
     pub fn new() -> Self {
         Self {
-            responsers: HashMap::new(),
+            responders: HashMap::new(),
             disable: HashSet::new(),
         }
     }
 
     /// Check if the `Notifier` has a callback function with the given name.
     pub fn has(&self, name: &str) -> bool {
-        self.responsers.contains_key(name)
+        self.responders.contains_key(name)
     }
 
     /// Check if the `Notifier` has a disabled callback function with the given name.
@@ -72,17 +72,17 @@ impl<T> Notifier<T> {
 
     /// Add a new callback function with the given name and function.
     pub fn add(&mut self, name: &str, f: Responder<T>) {
-        self.responsers.insert(name.to_string(), f);
+        self.responders.insert(name.to_string(), f);
     }
 
     /// Remove the callback function with the given name.
     pub fn remove(&mut self, name: &str) {
-        self.responsers.remove(name);
+        self.responders.remove(name);
     }
 
     /// Call all callback functions with the given data.
     pub fn notify(&mut self, data: &T) {
-        for (name, f) in self.responsers.iter_mut() {
+        for (name, f) in self.responders.iter_mut() {
             if !self.disable.contains(name) {
                 let mut f = RefCell::borrow_mut(f);
                 f(data);

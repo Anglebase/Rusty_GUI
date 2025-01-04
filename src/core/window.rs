@@ -29,6 +29,12 @@ impl Default for Window {
 }
 
 impl Window {
+    fn check_hwnd(&self) {
+        if self.hwnd.is_null() {
+            panic!("Window cannot be default.");
+        }
+    }
+    
     /// Create a new Window with the given `title`, `rect`, `parent` window, and `widget`.
     /// The parent window can be None if the window is a top-level window.
     /// The `widget` should be the wrapper of the structure instance that holds this window and implements the trait `Ele`.
@@ -65,17 +71,26 @@ impl Window {
 
     /// Get the area of the window. It is the client rect of window content.
     /// If you want to get the absolute rect of the window relative to the screen, you should use `absrect()` method.
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn rect(&self) -> Rect {
+        self.check_hwnd();
         get_rect(self.hwnd)
     }
 
     /// Get the title of the window
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn title(&self) -> String {
+        self.check_hwnd();
         get_window_title(self.hwnd)
     }
 
     /// Get the absolute rect of the window relative to the screen, including the title bar and borders.
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn absrect(&self) -> Rect {
+        self.check_hwnd();
         get_absolute_rect(self.hwnd)
     }
 
@@ -103,69 +118,108 @@ impl Window {
     ///     }
     /// }
     /// ```
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn update(&self) {
+        self.check_hwnd();
         update_window(self.hwnd);
     }
 
     /// Set the rect of the window.
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn set_rect(&self, rect: Rect) {
+        self.check_hwnd();
         set_window_rect(self.hwnd, rect);
     }
 
     /// Set the title of the window.
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn set_title(&self, title: &str) {
+        self.check_hwnd();
         set_window_title(self.hwnd, title);
     }
 
     /// Set the visibility of the window.
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn set_visible(&self, visible: bool) {
+        self.check_hwnd();
         set_window_visible(self.hwnd, visible);
     }
 
     /// Set the focus to the window.
     /// It will make this window be the target of the Keyboard Event.
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn set_focus(&self) {
+        self.check_hwnd();
         set_window_focus(self.hwnd);
     }
 
     /// Check if the window has focus.
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn has_focus(&self) -> bool {
+        self.check_hwnd();
         is_window_onfocus(self.hwnd)
     }
 
     /// Show the window and update it.
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn show(&self) {
+        self.check_hwnd();
         show_and_update(self.hwnd);
     }
 
     /// Hide the window.
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn hide(&self) {
+        self.check_hwnd();
         self.set_visible(false);
     }
 
     /// Minimize the window.
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn minimize(&self) {
+        self.check_hwnd();
         set_window_minimized(self.hwnd);
     }
 
     /// Maximize the window.
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn maximize(&self) {
+        self.check_hwnd();
         set_window_maximized(self.hwnd);
     }
 
     /// Restore the window from maximized or minimized state.
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn restore(&self) {
+        self.check_hwnd();
         set_window_restored(self.hwnd);
     }
 
     /// Disable the window.
     /// It will cause the window cannot accept any Event.
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn disable(&self) {
+        self.check_hwnd();
         disable_window(self.hwnd);
     }
 
     /// Enable the window.
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn enable(&self) {
+        self.check_hwnd();
         enable_window(self.hwnd);
     }
 
@@ -189,10 +243,12 @@ impl Window {
     /// ```
     /// # Panics
     /// If the hotkey `id` is not between 0 and 0xBFFF (Out of range is invalid).
+    /// If the window is default, it will panic.
     pub fn register_hotkey(&mut self, id: i32, modifiers: HotKeyFlags, key: KeyCode) {
         if id < 0 || id > 0xBFFF {
             panic!("Invalid hotkey id: {}", id);
         }
+        self.check_hwnd();
         register_hotkey_for_window(self.hwnd, id, key, modifiers);
     }
 
@@ -207,7 +263,10 @@ impl Window {
     /// let block = Block::new(rect!(50,50,800,600), None);
     /// block.as_window().set_timer(0, 1000);   // It will create a timer that triggers every 1000 milliseconds.
     /// ```
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn set_timer(&self, id: usize, interval: u32) {
+        self.check_hwnd();
         set_window_timer(self.hwnd, id, interval);
     }
 
@@ -230,7 +289,11 @@ impl Window {
     ///         }
     ///     }
     /// }
+    /// ```
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn kill_timer(&self, id: usize) {
+        self.check_hwnd();
         kill_window_timer(self.hwnd, id);
     }
 
@@ -257,7 +320,10 @@ impl Window {
     ///     }
     /// }));
     /// ```
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn foreach(&self, mut f: Box<dyn FnMut(&mut dyn Ele)>) {
+        self.check_hwnd();
         unsafe {
             EnumChildWindows(
                 self.hwnd as _,
@@ -284,7 +350,10 @@ impl Window {
     ///     }
     /// }));
     /// ```
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn read_data<T: Clone + 'static>(&self) -> Option<T> {
+        self.check_hwnd();
         let userdata = self.userdata.as_ref().map(|d| d.clone());
         userdata.map(|d| -> Option<T> {
             let d = d.downcast_ref::<T>()?;
@@ -295,7 +364,10 @@ impl Window {
     /// Write the data to the window.
     /// It will overwrite any existing data.
     /// see `read_data()` for example usage.
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn write_data<T: Clone + 'static>(&mut self, data: T) {
+        self.check_hwnd();
         self.userdata = Some(Arc::new(data));
     }
 }
