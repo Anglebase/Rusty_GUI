@@ -394,7 +394,7 @@ impl Window {
     /// block.as_window().post(id, Box::new(MyMessage::Quit));
     /// ```
     /// You can handle the message in the `on_message()` method of the window.
-    pub fn post(id: WindowID, msg: Box<dyn Any>) {
-        send_user_def_msg(id.hwnd, Box::new(msg));
+    pub fn post<T: Any + 'static>(id: WindowID, msg: T) {
+        send_user_def_msg(id.hwnd, Box::new(Box::new(msg)));
     }
 }

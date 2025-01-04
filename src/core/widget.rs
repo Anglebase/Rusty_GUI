@@ -27,7 +27,8 @@ impl<T: Ele> DerefMut for Widget<T> {
 }
 
 impl<T: Ele> Widget<T> {
-    pub fn new(data: Box<T>) -> Self {
+    pub fn new(data: T) -> Self {
+        let data = Box::new(data);
         // make the same address for the type data and the dynamic data
         let type_ptr = Box::into_raw(data);
         let dyn_ptr = type_ptr as *mut dyn Ele;
