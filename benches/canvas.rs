@@ -13,10 +13,10 @@ mod tests {
 
     impl CanvasBencher {
         fn new() -> Widget<Self> {
-            let mut this = Widget::new(Box::new(Self {
+            let mut this = Widget::new(Self {
                 this: Window::default(),
                 msg: String::from(""),
-            }));
+            });
             *this.as_window_mut() =
                 Window::new("Canvas Bencher", rect!(200, 200, 800, 600), None, &this);
             this

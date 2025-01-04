@@ -10,14 +10,17 @@ pub struct Switch {
 }
 
 impl Switch {
-    pub fn new(label: &str, rect: Rect, parent: &Window) -> Widget<Self> {
-        let mut this = Widget::new(Box::new(Self {
+    pub fn new(label: &str) -> Self {
+        Self {
             this: Window::default(),
             label: label.to_string().clone(),
             status: false,
             state_changed: Notifier::new(),
             backcolor: rgb!(235),
-        }));
+        }
+    }
+    pub fn create(label: &str, rect: Rect, parent: &Window) -> Widget<Self> {
+        let mut this = Widget::new(Self::new(label));
         *this.as_window_mut() = Window::new(label, rect, Some(parent), &this);
         this
     }

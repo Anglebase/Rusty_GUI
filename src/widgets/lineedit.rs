@@ -81,7 +81,7 @@ impl EventListener for LineEdit {
 }
 
 impl LineEdit {
-    pub fn new(placeholder: &str, rect: Rect, parent: &Window) -> Widget<LineEdit> {
+    pub fn new(placeholder: &str) -> Self {
         let frame_pen_style = PenStyle {
             width: 2,
             ..Default::default()
@@ -95,8 +95,7 @@ impl LineEdit {
             size: 24,
             ..Default::default()
         };
-
-        let it = Box::new(Self {
+        Self {
             this: Window::default(),
             content: String::new(),
             placeholder: String::from(placeholder),
@@ -108,8 +107,10 @@ impl LineEdit {
             text_color: Color::BLACK,
             placeholder_color: Color::GRAY,
             text: Font::new(text_font),
-        });
-        let mut this = Widget::new(it);
+        }
+    }
+    pub fn create(placeholder: &str, rect: Rect, parent: &Window) -> Widget<LineEdit> {
+        let mut this = Widget::new(Self::new(placeholder));
         this.this = Window::new("LineEdit", rect, Some(parent), &this);
         this
     }
