@@ -8,6 +8,21 @@ pub trait AsWindow {
 
 /// A macro for defining a default implementation of the `AsWindow` trait for a given type.
 /// This implementation returns a reference to the given window name for both `as_window` and `as_window_mut` methods.
+/// If your type has a field named `this` of type `Window`, you can simply call the macro without arguments.
+/// ## Example
+/// ```
+/// use rusty_gui::*;
+/// struct MyType { this: Window }
+/// default_as_window!(MyType);
+/// ```
+/// If your type has a different name for the window, you can pass it as an argument to the macro.
+/// ## Example
+/// ```
+/// use rusty_gui::*;
+/// struct MyType { my_window: Window }
+/// default_as_window!(MyType, my_window);
+/// ```
+/// If your type has not field of type `Window`, you should implement the `AsWindow` trait by hand.
 #[macro_export]
 macro_rules! default_as_window {
     ($def_type:ty, $window_name:ident) => {
