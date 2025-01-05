@@ -113,8 +113,7 @@ impl MyElement {
     }
 }
 ```
-
-You need initialize the field of type `Window` of your element type in this function. Here is an example:
+These two functions are just a naming convention, `new` is used to create concrete instances of structures, while `create` is used to create `Widget` wrappers that can serve as concrete GUI elements. Here is an example:
 ```rust
 impl MyElement {
     pub fn new() -> Self {
