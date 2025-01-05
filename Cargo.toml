@@ -1,6 +1,6 @@
 [package]
 name = "rusty_gui"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 description = "This is a simple GUI library for Rust."
 license = "Apache-2.0"
