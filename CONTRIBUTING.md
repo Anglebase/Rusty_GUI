@@ -1,1 +1,0 @@
-# Contributing for rusty_gui

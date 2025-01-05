@@ -81,7 +81,17 @@ This library is licensed under the Apache 2.0 license.
 
 ## More Information
 
-If you want to learn more about `rusty_gui`, you can read the [learning guide](https://github.com/Anglebase/Rusty_GUI/blob/master/LEARNING.md).
-If you want to contribute to `rusty_gui`, you can read the [contribution guide](https://github.com/Anglebase/Rusty_GUI/blob/master/CONTRIBUTING.md).
+If you want to learn more about `rusty_gui`, you can read the [learning guide](https://github.com/Anglebase/Rusty_GUI/blob/master/LEARNING.md). 
+If you want to contribute to `rusty_gui`, you can fork the repository and submit a pull request. Such as:
+
++ Adding new widgets or features.
++ Fixing bugs.
++ Improving performance.
+
+If you have any questions or concerns, you can open an issue on the repository. You should add a prefix label to indicate your main requirements. Such as:
+
++ \[question] How to use the library?
++ \[bug] The library does not work properly.
++ \[enhancement] Add a new feature to the library.
 
 For more information, please visit the [GitHub repository](https://github.com/Anglebase/Rusty_GUI.git).

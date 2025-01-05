@@ -31,6 +31,15 @@ impl Application {
     }
 
     /// Run the application event loop.
+    /// # Example
+    /// ```
+    /// use rusty_gui::*;
+    /// fn main() {
+    ///     let app = Application::new(true);
+    ///     // ... other code here
+    ///     app.exec();
+    /// }
+    /// ```
     pub fn exec(&self) {
         event_loop();
     }
