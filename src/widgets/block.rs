@@ -9,6 +9,7 @@ pub struct Block {
 }
 
 impl Block {
+    /// Create a new instance of `Block` struct.
     pub fn new() -> Self {
         Self {
             this: Window::default(),
