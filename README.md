@@ -54,12 +54,15 @@ impl EventListener for MyWindow {
 }
 
 impl MyWindow {
-    fn new(content: &str, rect: Rect) -> Widget<Self> {
-        let it = Box::new(Self {
+    fn new(content: &str) -> Self {
+        Self {
             this: Window::default(),
             content: String::from(content),
-        });
-        let mut ret = Widget::new(it);
+        }
+    }
+
+    fn create(content: &str, rect: Rect) -> Widget<Self> {
+        let mut ret = Widget::new(Self::new(content));
         ret.this = Window::new("MyWindow", rect, None, &ret);
         ret
     }
@@ -68,7 +71,7 @@ impl MyWindow {
 fn main() {
     let app = Application::new(true);
 
-    let window = MyWindow::new("Hello, This is Rusty GUI!", rect!(50, 50, 800, 600));
+    let window = MyWindow::create("Hello, This is Rusty GUI!", rect!(50, 50, 800, 600));
     window.as_window().show();
 
     app.exec();
