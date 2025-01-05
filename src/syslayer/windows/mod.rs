@@ -3,19 +3,10 @@ mod basic;
 mod gdi;
 mod winproc;
 
-use std::ptr::null_mut;
-
 pub(crate) use winproc::*;
 pub(crate) use apis::*;
 pub(crate) use basic::*;
 pub(crate) use gdi::*;
-
-pub fn sys_type() -> &'static str {
-    unsafe {
-        winproc(null_mut(), 0, 0, 0);
-    }
-    "windows"
-}
 
 /// Windows application interface.
 pub struct Application;
