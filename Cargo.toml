@@ -7,7 +7,8 @@ license = "Apache-2.0"
 repository = "https://github.com/Anglebase/Rusty_GUI.git"
 
 [package.metadata.docs.rs]
-
+all-features = true
+no-deps = true
 
 [dependencies]
 winapi = { version = "0.3", features = ["winuser", "wincon", "windef", "libloaderapi", "ntdef", "wingdi", "minwindef"] }
