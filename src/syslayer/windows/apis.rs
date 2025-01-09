@@ -496,13 +496,23 @@ pub fn set_window_size(hwnd: *mut c_void, size: Size) {
     }
 }
 
+pub fn enable_maximize_window(hwnd: *mut c_void) {
+    unsafe {
+        let style = GetWindowLongW(hwnd as _, GWL_STYLE) as u32;
+        SetWindowLongW(hwnd as _, GWL_STYLE, (style | WS_MAXIMIZEBOX) as _);
+    }
+}
+
 pub fn disable_maximize_window(hwnd: *mut c_void) {
     unsafe {
         let style = GetWindowLongW(hwnd as _, GWL_STYLE) as u32;
-        SetWindowLongW(
-            hwnd as _,
-            GWL_STYLE,
-            (style as u32 & !(WS_MAXIMIZEBOX as u32)) as _,
-        );
+        SetWindowLongW(hwnd as _, GWL_STYLE, (style & !WS_MAXIMIZEBOX) as _);
+    }
+}
+
+pub fn fix_window_size(hwnd: *mut c_void) {
+    unsafe {
+        let style = GetWindowLongW(hwnd as _, GWL_STYLE) as u32;
+        SetWindowLongW(hwnd as _, GWL_STYLE, (style & !WS_SIZEBOX) as _);
     }
 }

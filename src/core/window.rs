@@ -269,6 +269,17 @@ impl Window {
         set_window_maximized(self.hwnd);
     }
 
+    /// Enable the maximize button of the window.
+    /// # Panics
+    /// If the window is default, it will panic.
+    pub fn enable_maximize(&self) {
+        self.check_hwnd();
+        enable_maximize_window(self.hwnd);
+    }
+
+    /// Disable the maximize button of the window.
+    /// # Panics
+    /// If the window is default, it will panic.
     pub fn disable_maximize(&self) {
         self.check_hwnd();
         disable_maximize_window(self.hwnd);
@@ -297,6 +308,18 @@ impl Window {
     pub fn enable(&self) {
         self.check_hwnd();
         enable_window(self.hwnd);
+    }
+
+    /// Fix the size of the window.
+    /// It will prevent the window from resizing.
+    /// # Panics
+    /// If the window is default, it will panic.
+    /// # Note
+    /// This function will also disable the maximize button of the window.
+    pub fn fix_size(&self) {
+        self.check_hwnd();
+        fix_window_size(self.hwnd);
+        self.disable_maximize();
     }
 
     /// Register a hotkey for the window.
