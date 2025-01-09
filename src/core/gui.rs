@@ -1,3 +1,5 @@
+//! This file contains the core GUI requirements and their traits.
+
 use std::any::Any;
 use crate::{Canvas, Event, Window};
 

@@ -1,4 +1,4 @@
-use rusty_gui::*;
+use rusty_gui::{widgets::*, *};
 
 #[test]
 fn main() {
