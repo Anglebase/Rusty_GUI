@@ -8,4 +8,4 @@ pub use canvas::*;
 pub use event::*;
 pub use gui::*;
 pub use widget::Widget;
-pub use window::Window;
+pub use window::{Window, WindowID};

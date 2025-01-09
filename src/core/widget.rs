@@ -44,7 +44,7 @@ impl<T: Ele> Widget<T> {
             addr,
         };
         *ret.as_window_mut() = Window::new(title, rect, parent, &ret);
-        send_window_created_msg(ret.as_window().hwnd);
+        send_window_created_msg(ret.as_window().id.hwnd);
         ret
     }
 

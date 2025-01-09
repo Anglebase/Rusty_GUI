@@ -68,7 +68,7 @@ pub fn create_window<T: Ele>(
             rect.size.width,
             rect.size.height,
             if let Some(window) = parent {
-                window.hwnd as HWND
+                window.id.hwnd as HWND
             } else {
                 null_mut()
             },
