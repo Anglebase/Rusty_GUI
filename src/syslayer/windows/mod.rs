@@ -3,6 +3,7 @@ mod basic;
 mod gdi;
 mod winproc;
 
+use winapi::um::winuser::PostQuitMessage;
 pub(crate) use winproc::*;
 pub(crate) use apis::*;
 pub(crate) use basic::*;
@@ -19,6 +20,12 @@ impl Application {
         }
         set_no_auto_dpi_scale();
         Self
+    }
+
+    pub fn exit(&self, exit_code: i32) {
+        unsafe {
+            PostQuitMessage(exit_code);
+        }
     }
 
     /// Run the application event loop.
