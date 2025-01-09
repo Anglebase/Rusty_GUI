@@ -459,3 +459,9 @@ pub fn send_user_def_msg(hwnd: *mut c_void, msg: Box<Box<dyn Any>>) {
         SendMessageW(hwnd as _, USER_DEF_MSG, 0, Box::into_raw(msg) as _);
     }
 }
+
+pub fn send_window_created_msg(hwnd: *mut c_void) {
+    unsafe {
+        SendMessageW(hwnd as _, WINDOW_CREATED_MSG, 0, 0);
+    }
+}

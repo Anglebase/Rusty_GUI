@@ -17,9 +17,7 @@ impl Block {
     }
     /// Widget's constructor method must return a `Widget<Self>`.
     pub fn create(rect: Rect, parent: Option<&Window>) -> Widget<Self> {
-        let mut this = Widget::new(Self::new());
-        *this.as_window_mut() = Window::new("Block", rect, parent, &this);
-        this
+        Widget::new("Block", rect, parent, Self::new())
     }
 }
 

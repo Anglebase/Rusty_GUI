@@ -110,8 +110,6 @@ impl LineEdit {
         }
     }
     pub fn create(placeholder: &str, rect: Rect, parent: &Window) -> Widget<LineEdit> {
-        let mut this = Widget::new(Self::new(placeholder));
-        this.this = Window::new("LineEdit", rect, Some(parent), &this);
-        this
+        Widget::new("LineEdit", rect, Some(parent), Self::new(placeholder))
     }
 }

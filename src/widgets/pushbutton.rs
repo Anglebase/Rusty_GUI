@@ -20,9 +20,7 @@ impl PushButton {
         }
     }
     pub fn create(label: &str, rect: Rect, parent: &Window) -> Widget<Self> {
-        let mut this = Widget::new(Self::new(label));
-        *this.as_window_mut() = Window::new(label, rect, Some(parent), &this);
-        this
+        Widget::new("PushButton", rect, Some(parent), Self::new(label))
     }
 }
 

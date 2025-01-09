@@ -1,5 +1,5 @@
-use std::{os::raw::c_void, sync::Mutex};
 use std::any::Any;
+use std::{os::raw::c_void, sync::Mutex};
 use winapi::{
     shared::{
         minwindef::{BOOL, LPARAM, LRESULT, UINT, WPARAM},
@@ -16,7 +16,8 @@ use crate::*;
 use super::{get_rect, notifier_exit};
 
 static mut WINDOW_COUNT: Mutex<u32> = Mutex::new(0);
-pub const USER_DEF_MSG: UINT = WM_USER + 1;  // 
+pub const USER_DEF_MSG: UINT = WM_USER + 1; //
+pub const WINDOW_CREATED_MSG: UINT = WM_USER + 2;
 
 macro_rules! wparam_to_mkey {
     ($wparam:expr) => {
@@ -72,10 +73,6 @@ pub(super) unsafe extern "system" fn winproc(
             dwHoverTime: 0,
         };
         TrackMouseEvent(&mut ent);
-        // call init
-        let object_ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut (Box<dyn Ele>, bool);
-        let (obj, _) = object_ptr.as_mut().unwrap();
-        obj.on_event(&Event::WindowCreated);
         return DefWindowProcW(hwnd, msg, wparam, lparam);
     }
     // get window object
@@ -239,6 +236,12 @@ pub(super) unsafe extern "system" fn winproc(
         USER_DEF_MSG => {
             let any_obj_ptr = Box::from_raw(lparam as *mut Box<dyn Any>);
             obj.on_message(*any_obj_ptr);
+        }
+        WINDOW_CREATED_MSG => {
+            // call init
+            let object_ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut (Box<dyn Ele>, bool);
+            let (obj, _) = object_ptr.as_mut().unwrap();
+            obj.on_event(&Event::WindowCreated);
         }
         _ => {}
     };
