@@ -29,6 +29,8 @@ impl<T: Ele> DerefMut for Widget<T> {
 }
 
 impl<T: Ele> Widget<T> {
+    /// Create a new `Widget` with the given data.
+    /// The parameter `title`, `rect`, `parent` will be used to call `Window::new` to create the window.
     pub fn new(title: &str, rect: Rect, parent: Option<&Window>, data: T) -> Self {
         let data = Box::new(data);
         // make the same address for the type data and the dynamic data
@@ -46,6 +48,7 @@ impl<T: Ele> Widget<T> {
         ret
     }
 
+    /// Get the address of the widget.
     pub fn addr(&self) -> usize {
         self.addr
     }

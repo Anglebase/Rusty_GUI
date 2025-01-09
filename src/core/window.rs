@@ -17,7 +17,7 @@ pub struct Window {
 }
 
 // It is used to identify the window.
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WindowID {
     pub(crate) hwnd: *mut c_void,
 }
@@ -41,31 +41,8 @@ impl Window {
     
     /// Create a new Window with the given `title`, `rect`, `parent` window, and `widget`.
     /// The parent window can be None if the window is a top-level window.
-    /// The `widget` should be the wrapper of the structure instance that holds this window and implements the trait `Ele`.
-    /// # Example
-    /// ```
-    /// use rusty_gui::*;
-    /// 
-    /// struct YouWindow {
-    ///     this: Window,
-    /// }
-    /// 
-    /// // ...
-    /// // Add other code to implement the `Ele` trait.
-    /// // ...
-    /// 
-    /// impl YouWindow {
-    ///     // Define `Ele` structure specific constructor. It doesn't return by its type, it returns a wrapper.
-    ///     fn new(title: &str, area: Rect, parent: Option<&Window>) -> Widget<Self> {
-    ///         let object = Box::new(Self {
-    ///             this: Window::default(),    // use `Window::default()` to occupy space.
-    ///         });
-    ///         let mut result = Widget::new(object);
-    ///         result.this = Window::new(title, area, parent, &result);    // It needs the instance of Widget. 
-    ///         result
-    ///     }
-    /// }
-    /// ```
+    /// This function usually does not need to be called by the user, 
+    /// because it will be automatically called when you create the widget.
     pub fn new<T: Ele>(title: &str, rect: Rect, parent: Option<&Window>, widget: &Widget<T>) -> Self {
         Self {
             hwnd: create_window(title, rect, parent, widget) as _,
@@ -235,8 +212,8 @@ impl Window {
     /// ```
     /// use rusty_gui::*;
     ///
-    /// let block = Block::new(rect!(50,50,800,600), None);
-    /// block.as_window().register_hotkey(
+    /// let mut block = Block::create(rect!(50,50,800,600), None);
+    /// block.as_window_mut().register_hotkey(
     ///     0,
     ///     HotKeyFlags{
     ///         ctrl: true,
@@ -264,7 +241,7 @@ impl Window {
     /// ```
     /// use rusty_gui::*;
     ///
-    /// let block = Block::new(rect!(50,50,800,600), None);
+    /// let block = Block::create(rect!(50,50,800,600), None);
     /// block.as_window().set_timer(0, 1000);   // It will create a timer that triggers every 1000 milliseconds.
     /// ```
     /// # Panics
@@ -308,21 +285,21 @@ impl Window {
     /// ```
     /// use rusty_gui::*;
     ///
-    /// let mut parent = Block::new(rect!(50, 50, 800, 600), None);
-    /// let mut child1 = Block::new(rect!(100, 100, 200, 200), None);
-    /// let mut child2 = Block::new(rect!(300, 300, 200, 200), None);
+    /// let mut parent = Block::create(rect!(50, 50, 800, 600), None);
+    /// let mut child1 = Block::create(rect!(100, 100, 200, 200), None);
+    /// let mut child2 = Block::create(rect!(300, 300, 200, 200), None);
     ///
     /// child1.as_window_mut().write_data("Hello, world!".to_string());
     /// child2.as_window_mut().write_data("Goodbye, world!".to_string());
     ///
-    /// parent.as_window().foreach(Box::new(|w|{
+    /// parent.as_window().foreach(|w: &mut dyn Ele|{
     ///     if let Some(data) = w.as_window().read_data::<String>() {
     ///         // If current window is child1:
     ///         assert_eq!(data, "Hello, world!".to_string());
     ///         // If current window is child2:
     ///         assert_eq!(data, "Goodbye, world!".to_string());
     ///     }
-    /// }));
+    /// });
     /// ```
     /// # Panics
     /// If the window is default, it will panic.
@@ -337,16 +314,16 @@ impl Window {
     /// ```
     /// use rusty_gui::*;
     ///
-    /// let parent = Block::new(rect!(50, 50, 800, 600), None);
-    /// let mut child = Block::new(rect!(100, 100, 200, 200), None);
+    /// let parent = Block::create(rect!(50, 50, 800, 600), None);
+    /// let mut child = Block::create(rect!(100, 100, 200, 200), None);
     ///
     /// child.as_window_mut().write_data("Hello, world!".to_string());
     ///
-    /// parent.as_window().foreach(Box::new(|w|{
+    /// parent.as_window().foreach(|w: &mut dyn Ele|{
     ///     if let Some(data) = w.as_window().read_data::<String>() {
     ///         assert_eq!(data, "Hello, world!".to_string());
     ///     }
-    /// }));
+    /// });
     /// ```
     /// # Panics
     /// If the window is default, it will panic.
@@ -388,10 +365,10 @@ impl Window {
     ///     //...
     /// }
     /// 
-    /// let block = Block::new(rect!(50,50,800,600), None);
+    /// let block = Block::create(rect!(50,50,800,600), None);
     /// let id = block.as_window().get_id();
     ///
-    /// block.as_window().post(id, Box::new(MyMessage::Quit));
+    /// Window::post(id, Box::new(MyMessage::Quit));
     /// ```
     /// You can handle the message in the `on_message()` method of the window.
     pub fn post<T: Any + 'static>(id: WindowID, msg: T) {
