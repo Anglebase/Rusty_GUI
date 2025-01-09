@@ -6,7 +6,7 @@ use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 use std::{os::raw::c_void, ptr::null_mut};
 
-use super::{Ele, KeyCode, Widget};
+use super::{AbstractElement, KeyCode, Widget};
 
 /// The Window struct represents a window on the screen.
 /// It is the base of all GUI element.
@@ -46,7 +46,7 @@ impl Window {
     /// The parent window can be None if the window is a top-level window.
     /// This function usually does not need to be called by the user,
     /// because it will be automatically called when you create the widget.
-    pub fn new<T: Ele>(
+    pub fn new<T: Element>(
         title: &str,
         rect: Rect,
         parent: Option<&Window>,
@@ -145,7 +145,7 @@ impl Window {
     /// ```
     /// # Panics
     /// If the window is default, it will panic.
-    pub fn foreach<F: FnMut(&mut dyn Ele) + 'static>(&self, f: F) {
+    pub fn foreach<F: FnMut(&mut dyn AbstractElement) + 'static>(&self, f: F) {
         self.check_hwnd();
         for_each_child_window(self.id.hwnd, Box::new(f));
     }

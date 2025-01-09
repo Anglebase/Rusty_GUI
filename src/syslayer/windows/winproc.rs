@@ -76,7 +76,7 @@ pub(super) unsafe extern "system" fn winproc(
         return DefWindowProcW(hwnd, msg, wparam, lparam);
     }
     // get window object
-    let object_ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut (Box<dyn Ele>, bool);
+    let object_ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut (Box<dyn AbstractElement>, bool);
     let (obj, hover) = if object_ptr.is_null() {
         return DefWindowProcW(hwnd, msg, wparam, lparam);
     } else {
@@ -257,7 +257,7 @@ pub(super) unsafe extern "system" fn winproc(
         }
         WINDOW_CREATED_MSG => {
             // call init
-            let object_ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut (Box<dyn Ele>, bool);
+            let object_ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut (Box<dyn AbstractElement>, bool);
             let (obj, _) = object_ptr.as_mut().unwrap();
             obj.on_event(&Event::WindowCreated);
         }
@@ -266,7 +266,7 @@ pub(super) unsafe extern "system" fn winproc(
     DefWindowProcW(hwnd, msg, wparam, lparam)
 }
 
-unsafe fn handle_mouse_event(obj: &mut Box<dyn Ele>, msg: UINT, wparam: WPARAM, lparam: LPARAM) {
+unsafe fn handle_mouse_event(obj: &mut Box<dyn AbstractElement>, msg: UINT, wparam: WPARAM, lparam: LPARAM) {
     let button = match msg {
         WM_LBUTTONDOWN | WM_LBUTTONUP | WM_LBUTTONDBLCLK => MouseButton::Left,
         WM_RBUTTONDOWN | WM_RBUTTONUP | WM_RBUTTONDBLCLK => MouseButton::Right,
@@ -299,7 +299,7 @@ unsafe fn handle_mouse_event(obj: &mut Box<dyn Ele>, msg: UINT, wparam: WPARAM, 
     obj.on_event(&event);
 }
 
-unsafe fn handle_key_event(obj: &mut Box<dyn Ele>, msg: UINT, wparam: WPARAM) {
+unsafe fn handle_key_event(obj: &mut Box<dyn AbstractElement>, msg: UINT, wparam: WPARAM) {
     let vk = wparam as i32;
     let key = vk_to_key(vk);
     let event = match msg {
@@ -313,13 +313,13 @@ unsafe fn handle_key_event(obj: &mut Box<dyn Ele>, msg: UINT, wparam: WPARAM) {
 }
 
 pub unsafe extern "system" fn enum_windows_callback(hwnd: HWND, lparam: LPARAM) -> BOOL {
-    let ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut (Box<dyn Ele>, bool);
+    let ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut (Box<dyn AbstractElement>, bool);
     let obj = if ptr.is_null() {
         return 0;
     } else {
         ptr.as_mut().unwrap().0.as_mut()
     };
-    let callback = lparam as *mut Box<dyn FnMut(&mut dyn Ele)>;
+    let callback = lparam as *mut Box<dyn FnMut(&mut dyn AbstractElement)>;
     if callback.is_null() {
         return 0;
     }

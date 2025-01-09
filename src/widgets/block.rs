@@ -8,16 +8,18 @@ pub struct Block {
     this: Window,
 }
 
-impl Block {
-    /// Create a new instance of `Block` struct.
-    pub fn new() -> Self {
+impl Default for Block {
+    fn default() -> Self {
         Self {
             this: Window::default(),
         }
     }
+}
+
+impl Block {
     /// Widget's constructor method must return a `Widget<Self>`.
-    pub fn create(rect: Rect, parent: Option<&Window>) -> Widget<Self> {
-        Widget::new("Block", rect, parent, Self::new())
+    pub fn new(rect: Rect, parent: Option<&Window>) -> Widget<Self> {
+        Widget::new("Block", rect, parent)
     }
 }
 

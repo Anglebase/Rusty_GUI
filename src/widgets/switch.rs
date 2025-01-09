@@ -9,18 +9,23 @@ pub struct Switch {
     pub state_changed: Notifier<bool>,
 }
 
-impl Switch {
-    pub fn new(label: &str) -> Self {
+impl Default for Switch {
+    fn default() -> Self {
         Self {
             this: Window::default(),
-            label: label.to_string().clone(),
+            label: String::new(),
             status: false,
             state_changed: Notifier::new(),
             backcolor: rgb!(235),
         }
     }
-    pub fn create(label: &str, rect: Rect, parent: &Window) -> Widget<Self> {
-        Widget::new("Switch", rect, Some(parent), Self::new(label))
+}
+
+impl Switch {
+    pub fn new(label: &str, rect: Rect, parent: &Window) -> Widget<Self> {
+        let mut ret: Widget<Self> = Widget::new("Switch", rect, Some(parent));
+        ret.label = String::from(label);
+        ret
     }
 }
 

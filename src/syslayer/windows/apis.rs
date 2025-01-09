@@ -1,4 +1,4 @@
-use crate::{rect, Ele, KeyCode, Point, Rect, Size};
+use crate::{rect, AbstractElement, KeyCode, Point, Rect, Size};
 use std::any::Any;
 use std::{
     os::raw::c_void,
@@ -444,7 +444,7 @@ pub fn is_window_onfocus(hwnd: *mut c_void) -> bool {
     h == hwnd as _
 }
 
-pub fn for_each_child_window(hwnd: *mut c_void, mut f: Box<dyn FnMut(&mut dyn Ele)>) {
+pub fn for_each_child_window(hwnd: *mut c_void, mut f: Box<dyn FnMut(&mut dyn AbstractElement)>) {
     unsafe {
         EnumChildWindows(
             hwnd as _,

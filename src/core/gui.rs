@@ -64,5 +64,8 @@ pub trait EventListener: AsWindow {
 }
 
 /// Automatically implements this trait for any type that implements `Drawable` and `EventListener`.
-pub trait Ele: Drawable + EventListener {}
-impl<T: Drawable + EventListener> Ele for T {}
+pub trait AbstractElement: Drawable + EventListener {}
+impl<T: Drawable + EventListener> AbstractElement for T {}
+
+pub trait Element: AbstractElement + Default {}
+impl<T: AbstractElement + Default> Element for T {}

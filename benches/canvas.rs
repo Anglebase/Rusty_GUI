@@ -11,21 +11,18 @@ mod tests {
 
     default_as_window!(CanvasBencher, this);
 
-    impl CanvasBencher {
-        fn new() -> Self {
+    impl Default for CanvasBencher {
+        fn default() -> Self {
             Self {
                 this: Window::default(),
                 msg: String::from("Hello, world!"),
             }
         }
+    }
 
-        fn create() -> Widget<Self> {
-            Widget::new(
-                "Canvas Bencher",
-                rect!(100, 100, 800, 600),
-                None,
-                Self::new(),
-            )
+    impl CanvasBencher {
+        fn new() -> Widget<Self> {
+            Widget::new("CanvasBencher", rect!(100, 100, 800, 600), None)
         }
     }
 
@@ -71,7 +68,7 @@ mod tests {
     fn run() {
         let app = Application::new(false);
 
-        let canvas_bencher = CanvasBencher::create();
+        let canvas_bencher = CanvasBencher::new();
 
         canvas_bencher.as_window().show();
 

@@ -8,7 +8,7 @@ use winapi::{
     um::{libloaderapi::GetModuleHandleW, winuser::*},
 };
 
-use crate::{Ele, Rect, Widget, Window};
+use crate::{Element, Rect, Widget, Window};
 
 use super::winproc;
 
@@ -36,7 +36,7 @@ pub fn register_class(class_name: &Vec<WCHAR>) {
     }
 }
 
-pub fn create_window<T: Ele>(
+pub fn create_window<T: Element>(
     title: &str,
     rect: Rect,
     parent: Option<&Window>,

@@ -4,8 +4,8 @@ use rusty_gui::{widgets::*, *};
 fn main() {
     let app = Application::new(true);
 
-    let block = Block::create(rect!(50, 50, 800, 600), None);
-    let mut btn = PushButton::create("Button1", rect!(50, 50, 100, 50), block.as_window());
+    let block = Block::new(rect!(50, 50, 800, 600), None);
+    let mut btn = PushButton::new("Button1", rect!(50, 50, 100, 50), block.as_window());
 
     btn.press.add(
         "click",

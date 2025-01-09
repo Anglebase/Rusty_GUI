@@ -9,18 +9,23 @@ pub struct PushButton {
     pub press: Notifier<bool>,
 }
 
-impl PushButton {
-    pub fn new(label: &str) -> Self {
+impl Default for PushButton {
+    fn default() -> Self {
         Self {
             this: Window::default(),
-            label: label.to_string().clone(),
+            label: String::new(),
             status: false,
             press: Notifier::new(),
             backcolor: rgb!(235),
         }
     }
-    pub fn create(label: &str, rect: Rect, parent: &Window) -> Widget<Self> {
-        Widget::new("PushButton", rect, Some(parent), Self::new(label))
+}
+
+impl PushButton {
+    pub fn new(label: &str, rect: Rect, parent: &Window) -> Widget<Self> {
+        let mut ret: Widget<Self> = Widget::new("PushButton", rect, Some(parent));
+        ret.label = String::from(label);
+        ret
     }
 }
 
