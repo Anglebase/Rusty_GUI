@@ -107,47 +107,33 @@ impl EventListener for MyElement {
 
 ### Constructor of your element type
 
-Now, you need define a function named `new` as ths constructor for your element type and a function named `create` as
-the factory function for creating an instance of your element type. The `create` function returns a `Widget<Self>`,
-which is a wrapper type that contains a reference to the element. This is because `rusty_gui` needs to keep the dynamic
-reference and the type reference of the element at the same time. Its definition is like this:
+Before it, you need to implement the trait `Default` for your element type to provide a default constructor. Then, you can define the function named `new` to provide a constructor for your element type. Here is an example:
 
 ```rust
-impl MyElement {
-    pub fn new() -> Self {
-        Self {
-            // ...
-        }
-    }
-    pub fn create() -> Widget<Self> {
-        // ...
-    }
+struct MyElement {
+    this: Window,
+    // ...
 }
-```
 
-These two functions are just a naming convention, `new` is used to create concrete instances of structures, while
-`create` is used to create `Widget` wrappers that can serve as concrete GUI elements. Here is an example:
+default_as_window!(MyElement);
 
-```rust
-impl MyElement {
-    pub fn new() -> Self {
+impl Default for MyElement {
+    fn default() -> Self {
         Self {
             this: Window::default(),
             // ...
         }
     }
-    pub fn create() -> Widget<Self> {
-        let mut obj = Widget::new(Self::new());
-        obj.this = Window::new("MyElement", rect!(100,100,800,600), None, &obj);
-        obj
+}
+
+impl MyElement {
+    pub fn new(title: &str, rect: Rect, parent: Option<&Window>) -> Widget<Self> {
+        Widget::new(title, rect, parent)
     }
 }
 ```
 
-When you create the instance of `Window` type, you need give the reference of this element's wrapper. Before you create
-`Window` instance, you can set `Window::default()` to initialize the `this` field of your element type. The
-`Window::default()` is only a placeholder, and you need replace it with your own initialization code. It will panic if
-the method of `Window` type is called by its default value.
+The function `Widget::new` will call the function `default` to construct an instance of your element type and return a `Widget` object.
 
 ### Use your element type
 
@@ -157,7 +143,7 @@ Now, you can create an instance of your element type and show it on the screen:
 fn main() {
     let app = Applicaion::new(true);
 
-    let elem = MyElement::create();
+    let elem: Widget<MyElement> = MyElement::new("MyElement", rect!(100, 100, 800, 600), None);
     elem.as_window().show();
 
     app.exec();
@@ -207,18 +193,19 @@ impl EventListener for MyElement {
     }
 }
 
-impl MyElement {
-    pub fn new() -> Self {
+impl Default for MyElement {
+    fn default() -> Self {
         Self {
             this: Window::default(),
             notifier: Notifier::new(),
             // ...
         }
     }
-    pub fn create() -> Widget<Self> {
-        let mut obj = Widget::new(Self::new());
-        obj.this = Window::new("MyElement", rect!(100, 100, 800, 600), None, &obj);
-        obj
+}
+
+impl MyElement {
+    pub fn new() -> Widget<Self> {
+        Widget::new("MyElement", rect!(100, 100, 800, 600), None)
     }
 }
 ```
@@ -307,8 +294,8 @@ impl EventListener for MyElement {
     }
 }
 
-impl MyElement {
-    pub fn new() -> Self {
+impl Default for MyElement {
+    fn default() -> Self {
         Self {
             this: Window::default(),
             notifier: Notifier::new(),
@@ -316,17 +303,18 @@ impl MyElement {
             // ...
         }
     }
-    pub fn create() -> Widget<Self> {
-        let mut obj = Widget::new(Self::new());
-        obj.this = Window::new("MyElement", rect!(100, 100, 800, 600), None, &obj);
-        obj
+}
+
+impl MyElement {
+    pub fn new() -> Widget<Self> {
+        Widget::new("MyElement", rect!(100, 100, 800, 600), None)
     }
 }
 
 fn main() {
     let app = Application::new(true);
 
-    let mut elem = MyElement::create();
+    let mut elem = MyElement::new();
     elem.as_window().show();
     let id = elem.as_window().get_id();
 
@@ -348,83 +336,3 @@ message. In this case, the `on_message` function will add the value of `i` to th
 the `update` method of `Window` to update the content of the window.
 
 ## Expand on existing elements.
-
-If you want to create a derived type of existing element type, such as, you may feel that the buttons provided by
-rusty_gui do not meet your expected aesthetic, but you still need to reuse their logical functions, then you can extend
-the old elements by combining design. Here is an example:
-
-```rust
-use rusty_gui::*;
-
-struct MyButton {
-    this: PushButton,
-    label: String,
-}
-
-impl AsWindow for MyButton {
-    fn as_window(&self) -> &Window {
-        self.this.as_window()
-    }
-
-    fn as_window_mut(&mut self) -> &mut Window {
-        self.this.as_window_mut()
-    }
-}
-
-impl Drawable for MyButton {
-    fn draw(&mut self, canvas: &mut Canvas) {
-        // example code to draw a button
-        canvas.clear(Color::WHITE);
-        canvas.rect_text(self.as_window().rect(), &self.label, TextAlign::Center);
-    }
-}
-
-impl EventListener for MyButton {
-    fn on_event(&mut self, event: &Event) {
-        // reusing the on_event method of PushButton
-        self.this.on_event(event);
-    }
-}
-
-impl MyButton {
-    pub fn new(label: &str) -> Self {
-        Self {
-            this: PushButton::new(""),
-            label: String::from(label),
-        }
-    }
-
-    pub fn create(label: &str, rect: Rect, parent: &Window) -> Widget<Self> {
-        let mut ret = Widget::new(Self::new(label));
-        *ret.this.as_window_mut() = Window::new("MyButton", rect, Some(parent), &ret);
-        ret
-    }
-
-    pub fn notifier_mut(&mut self) -> &mut Notifier<bool> {
-        &mut self.this.press
-    }
-}
-
-fn main() {
-    let app = Application::new(true);
-
-    let root = Block::new(rect!(50, 50, 800, 600), None);
-    let mut button = MyButton::create("Click me", rect!(100, 100, 100, 50), root.as_window());
-
-    root.as_window().show();
-    button.as_window().show();
-
-    button.notifier_mut().add(
-        "click",
-        Responder::new(|b| {
-            println!("Button clicked: {}", b);
-        }),
-    );
-
-    app.exec();
-}
-```
-
-In this example, we define a new element type `MyButton` that is derived from `PushButton`. We reuse the `on_event`
-method of `PushButton` and implement the `draw` method to draw a button with a custom label. Of course, you can also add
-more logic to selectively reuse the corresponding functions.
