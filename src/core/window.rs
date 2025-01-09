@@ -1,9 +1,9 @@
 //! This file is containing the implementation of the Window struct and its methods.
 
+use crate::*;
 use std::any::Any;
 use std::sync::Arc;
 use std::{os::raw::c_void, ptr::null_mut};
-use crate::*;
 
 use super::{Ele, KeyCode, Widget};
 
@@ -14,7 +14,10 @@ use super::{Ele, KeyCode, Widget};
 pub struct Window {
     pub(crate) hwnd: *mut c_void,
     userdata: Option<Arc<dyn Any>>,
-
+    pub(crate) min_width: Option<i32>,
+    pub(crate) min_height: Option<i32>,
+    pub(crate) max_width: Option<i32>,
+    pub(crate) max_height: Option<i32>,
 }
 
 // It is used to identify the window.
@@ -29,6 +32,10 @@ impl Default for Window {
         Self {
             hwnd: null_mut(),
             userdata: None,
+            min_width: None,
+            min_height: None,
+            max_width: None,
+            max_height: None,
         }
     }
 }
@@ -39,15 +46,20 @@ impl Window {
             panic!("Window cannot be default.");
         }
     }
-    
+
     /// Create a new Window with the given `title`, `rect`, `parent` window, and `widget`.
     /// The parent window can be None if the window is a top-level window.
-    /// This function usually does not need to be called by the user, 
+    /// This function usually does not need to be called by the user,
     /// because it will be automatically called when you create the widget.
-    pub fn new<T: Ele>(title: &str, rect: Rect, parent: Option<&Window>, widget: &Widget<T>) -> Self {
+    pub fn new<T: Ele>(
+        title: &str,
+        rect: Rect,
+        parent: Option<&Window>,
+        widget: &Widget<T>,
+    ) -> Self {
         Self {
             hwnd: create_window(title, rect, parent, widget) as _,
-            userdata: None,
+            ..Default::default()
         }
     }
 
@@ -156,6 +168,67 @@ impl Window {
         set_window_focus(self.hwnd);
     }
 
+    /// Set the minimum width of the window.
+    /// # Panics
+    /// If the window is default, it will panic.
+    pub fn set_min_width(&mut self, width: i32) {
+        self.check_hwnd();
+        self.min_width = Some(width);
+    }
+
+    /// Set the minimum height of the window.
+    /// # Panics
+    /// If the window is default, it will panic.
+    pub fn set_min_height(&mut self, height: i32) {
+        self.check_hwnd();
+        self.min_height = Some(height);
+    }
+
+    /// Set the maximum width of the window.
+    /// # Panics
+    /// If the window is default, it will panic.
+    /// # Note
+    /// This function will also disable the maximize button of the window.
+    pub fn set_max_width(&mut self, width: i32) {
+        self.check_hwnd();
+        self.max_width = Some(width);
+        self.disable_maximize();
+    }
+
+    /// Set the maximum height of the window.
+    /// # Panics
+    /// If the window is default, it will panic.
+    /// # Note
+    /// This function will also disable the maximize button of the window.
+    pub fn set_max_height(&mut self, height: i32) {
+        self.check_hwnd();
+        self.max_height = Some(height);
+        self.disable_maximize();
+    }
+
+    /// Set the minimum size of the window.
+    /// It is the same as calling `set_min_width` and `set_min_height` separately.
+    /// # Panics
+    /// If the window is default, it will panic.
+    pub fn set_min_size(&mut self, size: Size) {
+        self.check_hwnd();
+        self.min_width = Some(size.width);
+        self.min_height = Some(size.height);
+    }
+
+    /// Set the maximum size of the window.
+    /// It is the same as calling `set_max_width` and `set_max_height` separately.
+    /// # Panics
+    /// If the window is default, it will panic.
+    /// # Note
+    /// This function will also disable the maximize button of the window.
+    pub fn set_max_size(&mut self, size: Size) {
+        self.check_hwnd();
+        self.max_width = Some(size.width);
+        self.max_height = Some(size.height);
+        self.disable_maximize();
+    }
+
     /// Check if the window has focus.
     /// # Panics
     /// If the window is default, it will panic.
@@ -194,6 +267,11 @@ impl Window {
     pub fn maximize(&self) {
         self.check_hwnd();
         set_window_maximized(self.hwnd);
+    }
+
+    pub fn disable_maximize(&self) {
+        self.check_hwnd();
+        disable_maximize_window(self.hwnd);
     }
 
     /// Restore the window from maximized or minimized state.
@@ -236,7 +314,7 @@ impl Window {
     ///         ctrl: true,
     ///         alt: true,
     ///         ..Default::default()
-    ///     }, 
+    ///     },
     ///     KeyCode::Alpha('L'));   // It will create hotkey 'Ctrl + Alt + L'.
     /// ```
     /// # Panics
@@ -278,7 +356,7 @@ impl Window {
     ///     this: Window,
     /// }
     /// default_as_window!(YouWindow);
-    /// 
+    ///
     /// impl EventListener for YouWindow {
     ///     fn on_event(&mut self, event: &Event) {
     ///         if let Event::Timer { id, .. } = event {
@@ -362,14 +440,14 @@ impl Window {
         self.check_hwnd();
         self.userdata = Some(Arc::new(data));
     }
-    
+
     /// Get the identifier of the window.
     /// It can be used to post message to the window.
     pub fn get_id(&self) -> WindowID {
         self.check_hwnd();
         WindowID { hwnd: self.hwnd }
     }
-    
+
     /// Post a message to the window.
     /// The `msg` is usually an enum of user-defined message.
     /// The `id` is the identifier of the window. It can be obtained by calling `get_id()` method.
@@ -381,7 +459,7 @@ impl Window {
     ///     Quit,
     ///     //...
     /// }
-    /// 
+    ///
     /// let block = Block::create(rect!(50,50,800,600), None);
     /// let id = block.as_window().get_id();
     ///

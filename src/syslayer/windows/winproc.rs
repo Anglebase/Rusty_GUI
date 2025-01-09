@@ -233,6 +233,24 @@ pub(super) unsafe extern "system" fn winproc(
             }
             return 0;
         }
+        WM_GETMINMAXINFO => {
+            let minmaxinfo = (lparam as *mut MINMAXINFO).as_mut().unwrap();
+            let min_width = obj.as_window().min_width.unwrap_or(0);
+            let min_height = obj.as_window().min_height.unwrap_or(0);
+            let screen_x = GetSystemMetrics(SM_CXSCREEN);
+            let screen_y = GetSystemMetrics(SM_CYSCREEN);
+            let max_width = obj.as_window().max_width.unwrap_or(screen_x);
+            let max_height = obj.as_window().max_height.unwrap_or(screen_y);
+            minmaxinfo.ptMinTrackSize.x = min_width;
+            minmaxinfo.ptMinTrackSize.y = min_height;
+            minmaxinfo.ptMaxTrackSize.x = max_width;
+            minmaxinfo.ptMaxTrackSize.y = max_height;
+            minmaxinfo.ptMaxSize.x = max_width;
+            minmaxinfo.ptMaxSize.y = max_height;
+            minmaxinfo.ptMaxPosition.x = (screen_x - max_width) / 2;
+            minmaxinfo.ptMaxPosition.y = (screen_y - max_height) / 2;
+            return 0;
+        }
         USER_DEF_MSG => {
             let any_obj_ptr = Box::from_raw(lparam as *mut Box<dyn Any>);
             obj.on_message(*any_obj_ptr);
