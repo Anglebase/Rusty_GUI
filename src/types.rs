@@ -321,6 +321,30 @@ impl From<(i32, i32, i32, i32)> for Rect {
     }
 }
 
+impl Into<(i32, i32)> for Size {
+    fn into(self) -> (i32, i32) {
+        (self.width, self.height)
+    }
+}
+
+impl From<(i32, i32)> for Size {
+    fn from(value: (i32, i32)) -> Self {
+        size!(value.0, value.1)
+    }
+}
+
+impl Into<(i32, i32)> for Point {
+    fn into(self) -> (i32, i32) {
+        (self.x, self.y)
+    }
+}
+
+impl From<(i32, i32)> for Point {
+    fn from(value: (i32, i32)) -> Self {
+        pos!(value.0, value.1)
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Color {
     pub red: u8,
