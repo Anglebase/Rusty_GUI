@@ -1,4 +1,4 @@
-use crate::{rect, Ele, KeyCode, Rect};
+use crate::{rect, Ele, KeyCode, Point, Rect, Size};
 use std::any::Any;
 use std::{
     os::raw::c_void,
@@ -463,5 +463,35 @@ pub fn send_user_def_msg(hwnd: *mut c_void, msg: Box<Box<dyn Any>>) {
 pub fn send_window_created_msg(hwnd: *mut c_void) {
     unsafe {
         SendMessageW(hwnd as _, WINDOW_CREATED_MSG, 0, 0);
+    }
+}
+
+pub fn set_window_pos(hwnd: *mut c_void, pos: Point) {
+    let (x, y) = pos.into();
+    unsafe {
+        SetWindowPos(
+            hwnd as _,
+            HWND_TOP,
+            x,
+            y,
+            0,
+            0,
+            SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE,
+        );
+    }
+}
+
+pub fn set_window_size(hwnd: *mut c_void, size: Size) {
+    let (w, h) = size.into();
+    unsafe {
+        SetWindowPos(
+            hwnd as _,
+            HWND_TOP,
+            0,
+            0,
+            w,
+            h,
+            SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE,
+        );
     }
 }

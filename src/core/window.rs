@@ -14,6 +14,7 @@ use super::{Ele, KeyCode, Widget};
 pub struct Window {
     pub(crate) hwnd: *mut c_void,
     userdata: Option<Arc<dyn Any>>,
+
 }
 
 // It is used to identify the window.
@@ -112,6 +113,22 @@ impl Window {
     pub fn set_rect(&self, rect: Rect) {
         self.check_hwnd();
         set_window_rect(self.hwnd, rect);
+    }
+
+    /// Set the position of the window.
+    /// # Panics
+    /// If the window is default, it will panic.
+    pub fn set_pos(&self, pos: Point) {
+        self.check_hwnd();
+        set_window_pos(self.hwnd, pos);
+    }
+
+    /// Set the size of the window.
+    /// # Panics
+    /// If the window is default, it will panic.
+    pub fn set_size(&self, size: Size) {
+        self.check_hwnd();
+        set_window_size(self.hwnd, size);
     }
 
     /// Set the title of the window.
