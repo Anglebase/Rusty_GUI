@@ -336,3 +336,152 @@ message. In this case, the `on_message` function will add the value of `i` to th
 the `update` method of `Window` to update the content of the window.
 
 ## Expand on existing elements.
+
+If you want to extend based on existing elements or improve code reusability, as mentioned earlier, AsWindow requires the structure to have a Window or a field that implements AsWindow. Here is an example:
+
+```rust
+use rusty_gui::*;
+use widgets::{Block, PushButton};
+
+struct MyButton {
+    this: PushButton,
+    label: String,
+    pub press: Notifier<bool>,
+    status: bool,
+    click_pos: Option<Point>,
+    radius: i32,
+}
+
+impl AsWindow for MyButton {
+    fn as_window(&self) -> &Window {
+        self.this.as_window()
+    }
+    fn as_window_mut(&mut self) -> &mut Window {
+        self.this.as_window_mut()
+    }
+}
+
+impl Drawable for MyButton {
+    fn draw(&mut self, canvas: &mut Canvas) {
+        canvas.clear(rgb!(140, 215, 245));
+        if let Some(pos) = self.click_pos {
+            let brush = Brush::new(rgb!(130, 205, 235));
+            canvas.set_brush(&brush);
+            let pen = Pen::new(PenStyle {
+                line_style: LineStyle::Null,
+                ..Default::default()
+            });
+            canvas.set_pen(&pen);
+            canvas.fill_circle(pos, self.radius);
+        }
+        canvas.set_text_color(Color::WHITE);
+        let font = Font::new(FontStyle {
+            size: 36,
+            ..Default::default()
+        });
+        canvas.set_font(&font);
+        canvas.rect_text(self.as_window().rect(), &self.label, TextAlign::Center);
+    }
+}
+
+enum MyMsg {
+    On,
+    Off,
+}
+
+impl EventListener for MyButton {
+    fn on_event(&mut self, event: &Event) {
+        if let Event::MouseButtonPressed {
+            pos,
+            button: MouseButton::Left,
+            ..
+        } = event
+        {
+            self.click_pos = Some(*pos);
+            self.as_window().set_timer(1, 15);
+        }
+        if let Event::Timer { id: 1 } = event {
+            self.radius += 6;
+            if self.radius
+                > self
+                    .as_window()
+                    .rect()
+                    .top_left()
+                    .distance(&self.as_window().rect().bottom_right()) as i32
+            {
+                self.as_window().kill_timer(1);
+                self.click_pos = None;
+                self.radius = 0;
+            }
+            self.as_window().update();
+        }
+        self.this.on_event(event);
+    }
+
+    fn on_message(&mut self, msg: Box<dyn std::any::Any>) {
+        let msg = *msg.downcast::<MyMsg>().unwrap();
+        match msg {
+            MyMsg::On => {
+                self.status = true;
+                self.press.notify(&self.status);
+            }
+            MyMsg::Off => {
+                self.status = false;
+                self.press.notify(&self.status);
+            }
+        }
+    }
+}
+
+impl Default for MyButton {
+    fn default() -> Self {
+        Self {
+            this: PushButton::default(),
+            label: "My Button".to_string(),
+            press: Notifier::new(),
+            status: false,
+            click_pos: None,
+            radius: 0,
+        }
+    }
+}
+
+impl MyButton {
+    fn new(label: &str, rect: Rect, parent: &Window) -> Widget<MyButton> {
+        let mut ret: Widget<MyButton> = Widget::new("MyButton", rect, Some(parent));
+        ret.label = String::from(label);
+        let id = ret.as_window().get_id();
+        ret.this.press.add(
+            "forwarder",
+            Responder::new(move |status: &bool| {
+                if *status {
+                    Window::post(id, MyMsg::On);
+                } else {
+                    Window::post(id, MyMsg::Off);
+                }
+            }),
+        );
+        ret
+    }
+}
+
+fn main() {
+    let app = Application::new(true);
+
+    let window = Block::new(rect!(100, 100, 800, 600), None);
+    window.as_window().show();
+
+    let mut btn = MyButton::new("Submit", rect!(50, 50, 200, 100), window.as_window());
+    btn.as_window().show();
+    btn.press.add(
+        "What",
+        Responder::new(|status: &bool| {
+            println!("Button status: {}", status);
+        }),
+    );
+
+    app.exec(EventLoop::Blocking);
+}
+```
+
+It defines a new element type `MyButton` that extends `PushButton` and make it more beautiful. Of course, you can also add more complex logic for complex conditional reuse.
