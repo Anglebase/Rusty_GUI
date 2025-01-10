@@ -100,7 +100,7 @@ pub struct Font {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FontWeight {
-    Default = 0,     // Default weight
+    Default = 0,      // Default weight
     Thin = 100,       // Thin weight
     ExtraLight = 200, // Extra light weight
     Light = 300,      // Light weight
@@ -170,6 +170,10 @@ impl Default for TextAlign {
     }
 }
 
+pub struct Path {
+    pub(crate) hdc: *mut c_void,
+}
+
 /// The `Canvas` is used to draw shapes and text on the screen.
 pub struct Canvas {
     pub(crate) hdc: *mut c_void,
@@ -181,14 +185,14 @@ impl Canvas {
     /// # Example
     /// ```
     /// use rusty_gui::*;
-    /// 
+    ///
     /// struct YouWindow {
     ///     this: Window,
     ///     // ...
     /// }
-    /// 
+    ///
     /// default_as_window!(YouWindow);
-    /// 
+    ///
     /// impl Drawable for YouWindow {
     ///     fn draw(&mut self, canvas: &mut Canvas) {
     ///         canvas.clear(Color::WHITE); // Clear the canvas with white color
@@ -284,7 +288,7 @@ impl Canvas {
             hfont: select_object(self.hdc, font.hfont) as *mut c_void,
         }
     }
-    
+
     /// Set the text color to `color`.
     /// # Example
     /// ```
@@ -407,5 +411,29 @@ impl Canvas {
     /// It uses the current text color, and font.
     pub fn rect_text(&self, rect: Rect, text: &str, align: TextAlign) {
         draw_rect_text(self.hdc, rect, text, align);
+    }
+
+    /// Create a new path in the current canvas.
+    /// If a path has already been created, it will overwrite the previously created path.
+    pub fn new_path(&self) -> Path {
+        begin_path(self.hdc);
+        Path { hdc: self.hdc }
+    }
+}
+
+impl Path {
+    /// End the current path.
+    pub fn end(self) {
+        end_path(self.hdc);
+    }
+
+    /// Move the current position to `(x, y)`.
+    pub fn move_to(&self, (x, y): (i32, i32)) {
+        move_to(self.hdc, x, y);
+    }
+
+    /// Draw a line from the current position to `(x, y)`.
+    pub fn line_to(&self, (x, y): (i32, i32)) {
+        line_to(self.hdc, x, y);
     }
 }

@@ -33,9 +33,7 @@ pub fn select_object(hdc: *mut c_void, obj: *mut c_void) -> *mut c_void {
 }
 
 pub fn set_current_text_color(hdc: *mut c_void, color: Color) -> Color {
-    let ret = unsafe {
-        SetTextColor(hdc as _, RGB(color.red, color.green, color.blue))
-    };
+    let ret = unsafe { SetTextColor(hdc as _, RGB(color.red, color.green, color.blue)) };
     rgb!(GetRValue(ret), GetGValue(ret), GetBValue(ret))
 }
 
@@ -60,7 +58,11 @@ pub fn new_pen_object(pen_style: PenStyle) -> *mut c_void {
     };
     let brush = LOGBRUSH {
         lbStyle: BS_SOLID,
-        lbColor: RGB(pen_style.color.red, pen_style.color.green, pen_style.color.blue),
+        lbColor: RGB(
+            pen_style.color.red,
+            pen_style.color.green,
+            pen_style.color.blue,
+        ),
         lbHatch: 0,
     };
     unsafe {
@@ -375,5 +377,29 @@ pub fn draw_rect_text(hdc: *mut c_void, rect: Rect, text: &str, align: TextAlign
             &mut rect,
             align | DT_SINGLELINE,
         );
+    }
+}
+
+pub fn begin_path(hdc: *mut c_void) {
+    unsafe {
+        BeginPath(hdc as _);
+    }
+}
+
+pub fn end_path(hdc: *mut c_void) {
+    unsafe {
+        EndPath(hdc as _);
+    }
+}
+
+pub fn move_to(hdc: *mut c_void, x: i32, y: i32) {
+    unsafe {
+        MoveToEx(hdc as _, x, y, null_mut());
+    }
+}
+
+pub fn line_to(hdc: *mut c_void, x: i32, y: i32) {
+    unsafe {
+        LineTo(hdc as _, x, y);
     }
 }
