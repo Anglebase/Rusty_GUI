@@ -10,7 +10,7 @@ use winapi::{
 
 use crate::{Element, Rect, Widget, Window};
 
-use super::winproc;
+use super::{winproc, EventLoop};
 
 pub fn register_class(class_name: &Vec<WCHAR>) {
     unsafe {
@@ -87,7 +87,7 @@ pub fn create_window<T: Element>(
     hwnd
 }
 
-pub fn event_loop() {
+pub fn event_loop(event_loop_mode: EventLoop) {
     let mut msg = MSG {
         hwnd: null_mut(),
         message: 0,
@@ -97,14 +97,24 @@ pub fn event_loop() {
         pt: POINT { x: 0, y: 0 },
     };
     unsafe {
-        loop {
-            if PeekMessageW(&mut msg, null_mut(), 0, 0, PM_REMOVE) != 0 {
+        match event_loop_mode {
+            EventLoop::Blocking => loop {
+                GetMessageW(&mut msg, null_mut(), 0, 0);
                 TranslateMessage(&msg);
                 DispatchMessageW(&msg);
                 if msg.message == WM_QUIT {
                     break;
                 }
-            }
+            },
+            EventLoop::NonBlocking => loop {
+                if PeekMessageW(&mut msg, null_mut(), 0, 0, PM_REMOVE) != 0 {
+                    TranslateMessage(&msg);
+                    DispatchMessageW(&msg);
+                    if msg.message == WM_QUIT {
+                        break;
+                    }
+                }
+            },
         }
     }
 }

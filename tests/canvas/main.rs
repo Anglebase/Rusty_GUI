@@ -17,5 +17,5 @@ fn main() {
     block.as_window().show();
     btn.as_window().show();
 
-    app.exec();
+    app.exec(EventLoop::Blocking);
 }

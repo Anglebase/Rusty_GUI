@@ -12,6 +12,12 @@ pub(crate) use gdi::*;
 /// Windows application interface.
 pub struct Application;
 
+/// Event loop mode.
+pub enum EventLoop{
+    Blocking,
+    NonBlocking,
+}
+
 impl Application {
     /// Initialize the application.
     pub fn new(show_console: bool) -> Self {
@@ -29,17 +35,20 @@ impl Application {
     }
 
     /// Run the application event loop.
+    /// This function blocks until the application is closed.
+    /// You can specify the event loop mode to either block or non-block.
     /// # Example
     /// ```
     /// use rusty_gui::*;
     /// fn main() {
     ///     let app = Application::new(true);
     ///     // ... other code here
-    ///     app.exec();
+    ///     app.exec(EventLoop::Blocking);
     /// }
     /// ```
-    pub fn exec(&self) {
-        event_loop();
+    /// The mode of `EventLoop::Blocking` has lower CPU usage than `EventLoop::NonBlocking`.
+    pub fn exec(&self, event_loop_mode: EventLoop) {
+        event_loop(event_loop_mode);
     }
 }
 

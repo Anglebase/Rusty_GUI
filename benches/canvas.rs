@@ -72,6 +72,6 @@ mod tests {
 
         canvas_bencher.as_window().show();
 
-        app.exec();
+        app.exec(EventLoop::Blocking);
     }
 }
