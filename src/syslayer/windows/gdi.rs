@@ -1,7 +1,7 @@
 use std::{f32::consts::PI, os::raw::c_void, ptr::null_mut};
 
 use winapi::{
-    shared::windef::RECT,
+    shared::windef::{RECT, SIZE},
     um::{wingdi::*, winuser::*},
 };
 
@@ -401,5 +401,158 @@ pub fn move_to(hdc: *mut c_void, x: i32, y: i32) {
 pub fn line_to(hdc: *mut c_void, x: i32, y: i32) {
     unsafe {
         LineTo(hdc as _, x, y);
+    }
+}
+
+pub fn draw_path_fill(hdc: *mut c_void) {
+    unsafe {
+        FillPath(hdc as _);
+    }
+}
+
+pub fn draw_path_frame(hdc: *mut c_void) {
+    unsafe {
+        StrokePath(hdc as _);
+    }
+}
+
+pub fn draw_path_frame_and_fill(hdc: *mut c_void) {
+    unsafe {
+        StrokeAndFillPath(hdc as _);
+    }
+}
+
+pub fn draw_rad_arc(hdc: *mut c_void, x: i32, y: i32, radius: i32, start: f32, sweep: f32) {
+    unsafe {
+        AngleArc(
+            hdc as _,
+            x,
+            y,
+            radius as _,
+            start / PI * 180.0,
+            sweep / PI * 180.0,
+        );
+    }
+}
+
+pub fn arc_to(hdc: *mut c_void, rect: Rect, start: f32, sweep: f32) {
+    let (left, top, w, h) = rect.into();
+    let (right, bottom) = (left + w, top + h);
+    let (x, y) = (left + w / 2, top + h / 2);
+    let (xr1, yr1) = (
+        x + (100.0 * f32::cos(start)) as i32,
+        y + (100.0 * f32::sin(start)) as i32,
+    );
+    let (xr2, yr2) = (
+        x + (100.0 * f32::cos(start + sweep)) as i32,
+        y + (100.0 * f32::sin(start + sweep)) as i32,
+    );
+    unsafe {
+        ArcTo(hdc as _, left, top, right, bottom, xr1, yr1, xr2, yr2);
+    }
+}
+
+pub fn draw_fill_chord(hdc: *mut c_void, rect: Rect, start: f32, sweep: f32) {
+    let (left, top, w, h) = rect.into();
+    let (right, bottom) = (left + w, top + h);
+    let (x, y) = (left + w / 2, top + h / 2);
+    let (xr1, yr1) = (
+        x + (100.0 * f32::cos(start)) as i32,
+        y + (100.0 * f32::sin(start)) as i32,
+    );
+    let (xr2, yr2) = (
+        x + (100.0 * f32::cos(start + sweep)) as i32,
+        y + (100.0 * f32::sin(start + sweep)) as i32,
+    );
+    unsafe {
+        Chord(hdc as _, left, top, right, bottom, xr1, yr1, xr2, yr2);
+    }
+}
+
+pub fn draw_chord(hdc: *mut c_void, rect: Rect, start: f32, sweep: f32) {
+    let (left, top, w, h) = rect.into();
+    let (right, bottom) = (left + w, top + h);
+    let (x, y) = (left + w / 2, top + h / 2);
+    let (xr1, yr1) = (
+        x + (100.0 * f32::cos(start)) as i32,
+        y + (100.0 * f32::sin(start)) as i32,
+    );
+    let (xr2, yr2) = (
+        x + (100.0 * f32::cos(start + sweep)) as i32,
+        y + (100.0 * f32::sin(start + sweep)) as i32,
+    );
+    unsafe {
+        MoveToEx(hdc as _, xr1, yr1, null_mut());
+        ArcTo(hdc as _, left, top, right, bottom, xr1, yr1, xr2, yr2);
+        LineTo(hdc as _, xr1, yr1);
+    }
+}
+
+pub fn draw_bezier_curve(hdc: *mut c_void, points: &[Point]) {
+    if points.len() < 4 || points.len() % 3 != 1 {
+        panic!("3n+1(n>=1) points are required to draw a bezier curve!");
+    }
+    unsafe {
+        PolyBezier(
+            hdc as _,
+            points.as_ptr() as _,
+            points.len().try_into().unwrap(),
+        );
+    }
+}
+
+pub fn bezier_curve_to(hdc: *mut c_void, points: &[Point]) {
+    if points.len() < 3 || points.len() % 3 != 0 {
+        panic!("3n points are required to draw a bezier curve!");
+    }
+    unsafe {
+        PolyBezierTo(
+            hdc as _,
+            points.as_ptr() as _,
+            points.len().try_into().unwrap(),
+        );
+    }
+}
+
+pub fn polyline_to(hdc: *mut c_void, points: &[Point]) {
+    unsafe {
+        PolylineTo(
+            hdc as _,
+            points.as_ptr() as _,
+            points.len().try_into().unwrap(),
+        );
+    }
+}
+
+pub fn set_fill_mode(hdc: *mut c_void, mode: PathFillMode) {
+    unsafe {
+        SetPolyFillMode(
+            hdc as _,
+            match mode {
+                PathFillMode::Alternate => ALTERNATE,
+                PathFillMode::Winding => WINDING,
+            },
+        );
+    }
+}
+
+pub fn calc_text_size(hdc: *mut c_void, text: &str) -> Size {
+    let text = text
+        .to_string()
+        .encode_utf16()
+        .chain(Some(0))
+        .collect::<Vec<u16>>();
+    let mut size = SIZE { cx: 0, cy: 0 };
+    unsafe {
+        GetTextExtentPoint32W(
+            hdc as _,
+            text.as_ptr(),
+            text.len().try_into().unwrap(),
+            &mut size as *mut _,
+        );
+    }
+    Size {
+        width: size.cx,
+        height: size.cy,
     }
 }

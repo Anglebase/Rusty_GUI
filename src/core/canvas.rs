@@ -174,6 +174,17 @@ pub struct Path {
     pub(crate) hdc: *mut c_void,
 }
 
+pub enum PathShow {
+    Frame,
+    Fill,
+    FrameAndFill,
+}
+
+pub enum PathFillMode {
+    Alternate,
+    Winding,
+}
+
 /// The `Canvas` is used to draw shapes and text on the screen.
 pub struct Canvas {
     pub(crate) hdc: *mut c_void,
@@ -311,6 +322,10 @@ impl Canvas {
         set_current_text_color(self.hdc, color)
     }
 
+    pub fn calc_rect(&self, text: &str) -> Size {
+        calc_text_size(self.hdc, text)
+    }
+
     /// Draw a line from `(x1, y1)` to `(x2, y2)`.
     /// It uses the current pen.
     pub fn line(&self, x1: i32, y1: i32, x2: i32, y2: i32) {
@@ -365,6 +380,22 @@ impl Canvas {
         draw_circle(self.hdc, pos, radius);
     }
 
+    pub fn chord(&self, rect: Rect, start: f32, sweep: f32) {
+        draw_chord(self.hdc, rect, start, sweep);
+    }
+
+    pub fn rad_arc(&self, pos: Point, radius: i32, start: f32, sweep: f32) {
+        draw_rad_arc(self.hdc, pos.x, pos.y, radius, start, sweep);
+    }
+
+    /// Draw the bezier curve with `points`.
+    /// It uses the current pen.
+    /// # Panics
+    /// Panics if `points` count is not 3n+1(n>=1).
+    pub fn bezier_curve(&self, points: &[Point]) {
+        draw_bezier_curve(self.hdc, points);
+    }
+
     /// Draw a fill rectangle with `rect`.
     /// It uses the current pen for outline and brush for fill.
     pub fn fill_rect(&self, rect: Rect) {
@@ -401,6 +432,10 @@ impl Canvas {
         draw_fill_circle(self.hdc, pos, radius);
     }
 
+    pub fn fill_chord(&self, rect: Rect, start: f32, sweep: f32) {
+        draw_fill_chord(self.hdc, rect, start, sweep);
+    }
+
     /// Draw a text with `pos` and `text`.
     /// It uses the current text color, and font.
     pub fn xy_text(&self, pos: Point, text: &str, align: TextAlign) {
@@ -415,18 +450,20 @@ impl Canvas {
 
     /// Create a new path in the current canvas.
     /// If a path has already been created, it will overwrite the previously created path.
-    pub fn new_path(&self) -> Path {
+    pub fn path<F: FnMut(&mut Path) -> PathShow>(&self, mut proc: F) {
         begin_path(self.hdc);
-        Path { hdc: self.hdc }
+        let mut arg = Path { hdc: self.hdc };
+        let show = proc(&mut arg);
+        end_path(self.hdc);
+        match show {
+            PathShow::Frame => draw_path_frame(self.hdc),
+            PathShow::Fill => draw_path_fill(self.hdc),
+            PathShow::FrameAndFill => draw_path_frame_and_fill(self.hdc),
+        };
     }
 }
 
 impl Path {
-    /// End the current path.
-    pub fn end(self) {
-        end_path(self.hdc);
-    }
-
     /// Move the current position to `(x, y)`.
     pub fn move_to(&self, (x, y): (i32, i32)) {
         move_to(self.hdc, x, y);
@@ -435,5 +472,78 @@ impl Path {
     /// Draw a line from the current position to `(x, y)`.
     pub fn line_to(&self, (x, y): (i32, i32)) {
         line_to(self.hdc, x, y);
+    }
+
+    pub fn polyline_to(&self, points: &[Point]) {
+        polyline_to(self.hdc, points);
+    }
+
+    /// Draw bezier curve with `points`.
+    /// The first point is the current position.
+    /// # Panics
+    /// Panics if `points` count is not 3n(n>=1).
+    pub fn bezier_to(&self, points: &[Point]) {
+        bezier_curve_to(self.hdc, points);
+    }
+
+    /// Draw a part of a circle with center `(x, y)` and radius `radius`.
+    /// The arc is drawn from the current position to the start of the arc.
+    pub fn rad_arc(&self, (x, y): (i32, i32), radius: i32, start: f32, sweep: f32) {
+        draw_rad_arc(self.hdc, x, y, radius, start, sweep);
+    }
+
+    /// Draw a part of a circle with center `(x, y)` and radius `radius`.
+    /// The arc is drawn from the current position to the start of the arc.
+    pub fn arc(&self, rect: Rect, start: f32, sweep: f32) {
+        draw_arc(self.hdc, rect, start, sweep);
+    }
+
+    /// This function is same as `arc` but it will change the current position to the end of the arc.
+    pub fn arc_to(&self, rect: Rect, start: f32, sweep: f32) {
+        arc_to(self.hdc, rect, start, sweep);
+    }
+
+    pub fn chord(&self, rect: Rect, start: f32, sweep: f32) {
+        draw_fill_chord(self.hdc, rect, start, sweep);
+    }
+
+    pub fn fill_ellipse(&self, rect: Rect) {
+        draw_fill_ellipse(self.hdc, rect);
+    }
+
+    pub fn pie(&self, rect: Rect, start: f32, sweep: f32) {
+        draw_pie(self.hdc, rect, start, sweep);
+    }
+
+    pub fn fill_rect(&self, rect: Rect) {
+        draw_fill_rect(self.hdc, rect);
+    }
+
+    pub fn fill_round_rect(&self, rect: Rect, rx: i32, ry: i32) {
+        draw_fill_round_rect(self.hdc, rect, rx, ry);
+    }
+
+    pub fn fill_polygon(&self, points: &[Point]) {
+        draw_fill_polygon(self.hdc, points);
+    }
+
+    pub fn polyline(&self, points: &[Point]) {
+        draw_polyline(self.hdc, points);
+    }
+
+    pub fn circle(&self, pos: Point, radius: i32) {
+        draw_circle(self.hdc, pos, radius);
+    }
+
+    pub fn fill_circle(&self, pos: Point, radius: i32) {
+        draw_fill_circle(self.hdc, pos, radius);
+    }
+
+    pub fn set_fill_mode(&self, mode: PathFillMode) {
+        set_fill_mode(self.hdc, mode);
+    }
+
+    pub fn xy_text(&self, (x, y): (i32, i32), text: &str, align: TextAlign) {
+        draw_xy_text(self.hdc, (x, y).into(), text, align);
     }
 }
