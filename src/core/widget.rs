@@ -48,8 +48,7 @@ impl<T: Element> Widget<T> {
         ret
     }
 
-    /// Get the address of the widget.
-    pub fn addr(&self) -> usize {
+    pub(crate) fn addr(&self) -> usize {
         self.addr
     }
 }

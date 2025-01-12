@@ -468,8 +468,7 @@ impl Canvas {
         draw_bitmap(self.hdc, rect, bitmap);
     }
 
-    /// Create a new path in the current canvas.
-    /// If a path has already been created, it will overwrite the previously created path.
+    /// Context manager for drawing paths.
     pub fn path<F: FnMut(&mut Path) -> PathShow>(&self, mut proc: F) {
         begin_path(self.hdc);
         let mut arg = Path { hdc: self.hdc };
@@ -494,6 +493,8 @@ impl Path {
         line_to(self.hdc, x, y);
     }
 
+    /// Draw polyline with `points`.
+    /// The first point is the current position.
     pub fn polyline_to(&self, points: &[Point]) {
         polyline_to(self.hdc, points);
     }
