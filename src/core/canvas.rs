@@ -185,6 +185,11 @@ pub enum PathFillMode {
     Winding,
 }
 
+pub enum BackMode {
+    Opaque,
+    Transparent,
+}
+
 /// The `Canvas` is used to draw shapes and text on the screen.
 pub struct Canvas {
     pub(crate) hdc: *mut c_void,
@@ -192,6 +197,9 @@ pub struct Canvas {
 }
 
 impl Canvas {
+    pub fn set_bk_mode(&self, mode: BackMode) {
+        set_bk_mode(self.hdc, mode);
+    }
     /// Clear current widget content with `color`.
     /// # Example
     /// ```
@@ -446,6 +454,10 @@ impl Canvas {
     /// It uses the current text color, and font.
     pub fn rect_text(&self, rect: Rect, text: &str, align: TextAlign) {
         draw_rect_text(self.hdc, rect, text, align);
+    }
+
+    pub fn put_bitmap(&self, pos: Point, bitmap: &BitMap) {
+        put_bitmap(self.hdc, pos, bitmap);
     }
 
     /// Create a new path in the current canvas.

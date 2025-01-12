@@ -5,10 +5,7 @@ use winapi::{
         minwindef::{BOOL, LPARAM, LRESULT, UINT, WPARAM},
         windef::{HDC, HWND, RECT},
     },
-    um::{
-        wingdi::{SetBkMode, TRANSPARENT},
-        winuser::*,
-    },
+    um::winuser::*,
 };
 
 use crate::*;
@@ -76,7 +73,8 @@ pub(super) unsafe extern "system" fn winproc(
         return DefWindowProcW(hwnd, msg, wparam, lparam);
     }
     // get window object
-    let object_ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut (Box<dyn AbstractElement>, bool);
+    let object_ptr =
+        GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut (Box<dyn AbstractElement>, bool);
     let (obj, hover) = if object_ptr.is_null() {
         return DefWindowProcW(hwnd, msg, wparam, lparam);
     } else {
@@ -109,7 +107,6 @@ pub(super) unsafe extern "system" fn winproc(
                 rgbReserved: [0; 32],
             };
             let hdc = BeginPaint(hwnd, &mut ps);
-            SetBkMode(hdc, TRANSPARENT as _);
             let mut canvas = Canvas {
                 hdc: hdc as _,
                 rect: get_rect(hwnd as _),
@@ -257,7 +254,8 @@ pub(super) unsafe extern "system" fn winproc(
         }
         WINDOW_CREATED_MSG => {
             // call init
-            let object_ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut (Box<dyn AbstractElement>, bool);
+            let object_ptr =
+                GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut (Box<dyn AbstractElement>, bool);
             let (obj, _) = object_ptr.as_mut().unwrap();
             obj.on_event(&Event::WindowCreated);
         }
@@ -266,7 +264,12 @@ pub(super) unsafe extern "system" fn winproc(
     DefWindowProcW(hwnd, msg, wparam, lparam)
 }
 
-unsafe fn handle_mouse_event(obj: &mut Box<dyn AbstractElement>, msg: UINT, wparam: WPARAM, lparam: LPARAM) {
+unsafe fn handle_mouse_event(
+    obj: &mut Box<dyn AbstractElement>,
+    msg: UINT,
+    wparam: WPARAM,
+    lparam: LPARAM,
+) {
     let button = match msg {
         WM_LBUTTONDOWN | WM_LBUTTONUP | WM_LBUTTONDBLCLK => MouseButton::Left,
         WM_RBUTTONDOWN | WM_RBUTTONUP | WM_RBUTTONDBLCLK => MouseButton::Right,

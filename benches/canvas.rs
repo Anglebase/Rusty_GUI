@@ -22,7 +22,19 @@ mod tests {
 
     impl CanvasBencher {
         fn new() -> Widget<Self> {
-            Widget::new("CanvasBencher", rect!(100, 100, 800, 600), None)
+            Widget::new("CanvasBencher", rect!(100, 100, 1600, 900), None)
+        }
+    }
+
+    impl EventListener for CanvasBencher {
+        fn on_event(&mut self, event: &Event) {
+            if let Event::WindowResized { size, ty } = event {
+                self.msg = format!(
+                    "Window resized to {}x{}, type: {:?}",
+                    size.width, size.height, ty
+                );
+                self.this.update();
+            }
         }
     }
 
@@ -49,18 +61,15 @@ mod tests {
             canvas.arc(rect!(100, 100, 150, 100), PI / 2.0, PI);
             canvas.fill_pie(rect!(200, 200, 150, 100), 0.0, PI);
             canvas.pie(rect!(200, 300, 150, 100), 0.0, PI);
-        }
-    }
 
-    impl EventListener for CanvasBencher {
-        fn on_event(&mut self, event: &Event) {
-            if let Event::WindowResized { size, ty } = event {
-                self.msg = format!(
-                    "Window resized to {}x{}, type: {:?}",
-                    size.width, size.height, ty
-                );
-                self.this.update();
-            }
+            canvas.path(|path| {
+                path.move_to((500, 200));
+                // Draw a Star:
+                let r = rect!(500, 200, 500, 500);
+                path.chord(r, PI / 4.0,  PI / 2.0);
+                path.circle(r.center(), 1);
+                PathShow::Frame
+            });
         }
     }
 

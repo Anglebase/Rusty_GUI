@@ -216,12 +216,12 @@ pub fn draw_arc(hdc: *mut c_void, rect: Rect, start: f32, sweep: f32) {
     let (x2, y2) = (x1 + w, y1 + h);
     let (x, y) = (x1 + w / 2, y1 + h / 2);
     let (x3, y3) = (
-        x + (100.0 * f32::cos(start)) as i32,
-        y + (100.0 * f32::sin(start)) as i32,
+        x + (100.0 * f32::cos(-start)) as i32,
+        y + (100.0 * f32::sin(-start)) as i32,
     );
     let (x4, y4) = (
-        x + (100.0 * f32::cos(start + sweep)) as i32,
-        y + (100.0 * f32::sin(start + sweep)) as i32,
+        x + (100.0 * f32::cos(-start - sweep)) as i32,
+        y + (100.0 * f32::sin(-start - sweep)) as i32,
     );
     unsafe {
         Arc(hdc as _, x1, y1, x2, y2, x3, y3, x4, y4);
@@ -233,12 +233,12 @@ pub fn draw_pie(hdc: *mut c_void, rect: Rect, start: f32, sweep: f32) {
     let (right, bottom) = (left + w, top + h);
     let (x, y) = (left + w / 2, top + h / 2);
     let (xr1, yr1) = (
-        x + (100.0 * f32::cos(start)) as i32,
-        y + (100.0 * f32::sin(start)) as i32,
+        x + (100.0 * f32::cos(-start)) as i32,
+        y + (100.0 * f32::sin(-start)) as i32,
     );
     let (xr2, yr2) = (
-        x + (100.0 * f32::cos(start + sweep)) as i32,
-        y + (100.0 * f32::sin(start + sweep)) as i32,
+        x + (100.0 * f32::cos(-start - sweep)) as i32,
+        y + (100.0 * f32::sin(-start - sweep)) as i32,
     );
     unsafe {
         MoveToEx(hdc as _, x, y, null_mut());
@@ -290,8 +290,8 @@ pub fn draw_fill_pie(hdc: *mut c_void, rect: Rect, start: f32, sweep: f32) {
     let (right, bottom) = (left + w, top + h);
     let (x, y) = (left + w / 2, top + h / 2);
     let (xr1, yr1) = (
-        x + (100.0 * f32::cos(start)) as i32,
-        y + (100.0 * f32::sin(start)) as i32,
+        x + (100.0 * f32::cos(-start)) as i32,
+        y + (100.0 * f32::sin(-start)) as i32,
     );
     let (xr2, yr2) = (
         x + (100.0 * f32::cos(start + sweep)) as i32,
@@ -440,12 +440,12 @@ pub fn arc_to(hdc: *mut c_void, rect: Rect, start: f32, sweep: f32) {
     let (right, bottom) = (left + w, top + h);
     let (x, y) = (left + w / 2, top + h / 2);
     let (xr1, yr1) = (
-        x + (100.0 * f32::cos(start)) as i32,
-        y + (100.0 * f32::sin(start)) as i32,
+        x + (100.0 * f32::cos(-start)) as i32,
+        y + (100.0 * f32::sin(-start)) as i32,
     );
     let (xr2, yr2) = (
-        x + (100.0 * f32::cos(start + sweep)) as i32,
-        y + (100.0 * f32::sin(start + sweep)) as i32,
+        x + (100.0 * f32::cos(-start - sweep)) as i32,
+        y + (100.0 * f32::sin(-start - sweep)) as i32,
     );
     unsafe {
         ArcTo(hdc as _, left, top, right, bottom, xr1, yr1, xr2, yr2);
@@ -457,12 +457,12 @@ pub fn draw_fill_chord(hdc: *mut c_void, rect: Rect, start: f32, sweep: f32) {
     let (right, bottom) = (left + w, top + h);
     let (x, y) = (left + w / 2, top + h / 2);
     let (xr1, yr1) = (
-        x + (100.0 * f32::cos(start)) as i32,
-        y + (100.0 * f32::sin(start)) as i32,
+        x + (100.0 * f32::cos(-start)) as i32,
+        y + (100.0 * f32::sin(-start)) as i32,
     );
     let (xr2, yr2) = (
-        x + (100.0 * f32::cos(start + sweep)) as i32,
-        y + (100.0 * f32::sin(start + sweep)) as i32,
+        x + (100.0 * f32::cos(-start - sweep)) as i32,
+        y + (100.0 * f32::sin(-start - sweep)) as i32,
     );
     unsafe {
         Chord(hdc as _, left, top, right, bottom, xr1, yr1, xr2, yr2);
@@ -474,12 +474,12 @@ pub fn draw_chord(hdc: *mut c_void, rect: Rect, start: f32, sweep: f32) {
     let (right, bottom) = (left + w, top + h);
     let (x, y) = (left + w / 2, top + h / 2);
     let (xr1, yr1) = (
-        x + (100.0 * f32::cos(start)) as i32,
-        y + (100.0 * f32::sin(start)) as i32,
+        x + (100.0 * f32::cos(-start)) as i32,
+        y + (100.0 * f32::sin(-start)) as i32,
     );
     let (xr2, yr2) = (
-        x + (100.0 * f32::cos(start + sweep)) as i32,
-        y + (100.0 * f32::sin(start + sweep)) as i32,
+        x + (100.0 * f32::cos(-start - sweep)) as i32,
+        y + (100.0 * f32::sin(-start - sweep)) as i32,
     );
     unsafe {
         MoveToEx(hdc as _, xr1, yr1, null_mut());
@@ -554,5 +554,47 @@ pub fn calc_text_size(hdc: *mut c_void, text: &str) -> Size {
     Size {
         width: size.cx,
         height: size.cy,
+    }
+}
+
+pub fn new_bitmap(hdc: *mut c_void, width: i32, height: i32) -> *mut c_void {
+    unsafe { CreateCompatibleBitmap(hdc as _, width, height) as _ }
+}
+
+pub fn put_bitmap(hdc: *mut c_void, pos: Point, bitmap: &BitMap) {
+    unsafe {
+        BitBlt(
+            hdc as _,
+            pos.x,
+            pos.y,
+            bitmap.size.width,
+            bitmap.size.height,
+            bitmap.mdc as _,
+            0,
+            0,
+            SRCCOPY,
+        );
+    }
+}
+
+pub fn new_hdc(hdc: *mut c_void) -> *mut c_void {
+    unsafe { CreateCompatibleDC(hdc as _) as _ }
+}
+
+pub fn delete_hdc(hdc: *mut c_void) {
+    unsafe {
+        DeleteDC(hdc as _);
+    }
+}
+
+pub fn set_bk_mode(hdc: *mut c_void, mode: BackMode) {
+    unsafe {
+        SetBkMode(
+            hdc as _,
+            match mode {
+                BackMode::Transparent => TRANSPARENT as _,
+                BackMode::Opaque => OPAQUE as _,
+            },
+        );
     }
 }
