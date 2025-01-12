@@ -363,24 +363,31 @@ impl AsWindow for MyButton {
 
 impl Drawable for MyButton {
     fn draw(&mut self, canvas: &mut Canvas) {
-        canvas.clear(rgb!(140, 215, 245));
-        if let Some(pos) = self.click_pos {
-            let brush = Brush::new(rgb!(130, 205, 235));
-            canvas.set_brush(&brush);
-            let pen = Pen::new(PenStyle {
-                line_style: LineStyle::Null,
+        let buff = BitMap::new_from_canvas(canvas);
+
+        buff.canvas(|canvas| {
+            canvas.clear(rgb!(140, 215, 245));
+            if let Some(pos) = self.click_pos {
+                let brush = Brush::new(rgb!(130, 205, 235));
+                canvas.set_brush(&brush);
+                let pen = Pen::new(PenStyle {
+                    line_style: LineStyle::Null,
+                    ..Default::default()
+                });
+                canvas.set_pen(&pen);
+                canvas.fill_circle(pos, self.radius);
+            }
+            canvas.set_text_color(Color::WHITE);
+            let font = Font::new(FontStyle {
+                size: 36,
                 ..Default::default()
             });
-            canvas.set_pen(&pen);
-            canvas.fill_circle(pos, self.radius);
-        }
-        canvas.set_text_color(Color::WHITE);
-        let font = Font::new(FontStyle {
-            size: 36,
-            ..Default::default()
+            canvas.set_font(&font);
+            canvas.set_bk_mode(BackMode::Transparent);
+            canvas.rect_text(self.as_window().rect(), &self.label, TextAlign::Center);
         });
-        canvas.set_font(&font);
-        canvas.rect_text(self.as_window().rect(), &self.label, TextAlign::Center);
+
+        canvas.put_bitmap(pos!(0, 0), &buff);
     }
 }
 
@@ -401,14 +408,21 @@ impl EventListener for MyButton {
             self.as_window().set_timer(1, 15);
         }
         if let Event::Timer { id: 1 } = event {
-            self.radius += 6;
-            if self.radius
-                > self
-                    .as_window()
-                    .rect()
-                    .top_left()
-                    .distance(&self.as_window().rect().bottom_right()) as i32
-            {
+            const SPEED: i32 = 9;
+            let lt = self.as_window().rect().top_left();
+            let rb = self.as_window().rect().bottom_right();
+            let lb = self.as_window().rect().bottom_left();
+            let rt = self.as_window().rect().top_right();
+            let distance = self.click_pos.unwrap().distance(&lt).max(
+                self.click_pos.unwrap().distance(&rb).max(
+                    self.click_pos
+                        .unwrap()
+                        .distance(&lb)
+                        .max(self.click_pos.unwrap().distance(&rt)),
+                ),
+            ) + SPEED as f32;
+            self.radius += SPEED;
+            if self.radius > distance as _ {
                 self.as_window().kill_timer(1);
                 self.click_pos = None;
                 self.radius = 0;
@@ -482,6 +496,7 @@ fn main() {
 
     app.exec(EventLoop::Blocking);
 }
+
 ```
 
-It defines a new element type `MyButton` that extends `PushButton` and make it more beautiful. Of course, you can also add more complex logic for complex conditional reuse.
+It defines a new element type `MyButton` that extends `PushButton` and make it more beautiful and it has better interactive effects. Of course, you can also add more complex logic for complex conditional reuse.
