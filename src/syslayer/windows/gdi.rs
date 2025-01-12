@@ -1,4 +1,8 @@
-use std::{f32::consts::PI, os::raw::c_void, ptr::null_mut};
+use std::{
+    f32::consts::PI,
+    os::raw::c_void,
+    ptr::null_mut,
+};
 
 use winapi::{
     shared::windef::{RECT, SIZE},
@@ -563,17 +567,20 @@ pub fn new_bitmap(hdc: *mut c_void, width: i32, height: i32) -> *mut c_void {
 
 pub fn put_bitmap(hdc: *mut c_void, pos: Point, bitmap: &BitMap) {
     unsafe {
+        let mdc = CreateCompatibleDC(hdc as _);
+        SelectObject(mdc as _, bitmap.bmp as _);
         BitBlt(
             hdc as _,
             pos.x,
             pos.y,
             bitmap.size.width,
             bitmap.size.height,
-            bitmap.mdc as _,
+            mdc as _,
             0,
             0,
             SRCCOPY,
         );
+        DeleteDC(mdc as _);
     }
 }
 
@@ -596,5 +603,45 @@ pub fn set_bk_mode(hdc: *mut c_void, mode: BackMode) {
                 BackMode::Opaque => OPAQUE as _,
             },
         );
+    }
+}
+
+pub fn clip_bitmap(hdc: *mut c_void, rect: Rect, bitmap: &BitMap, pos: Point) {
+    unsafe {
+        let mdc = CreateCompatibleDC(hdc as _);
+        SelectObject(mdc as _, bitmap.bmp as _);
+        BitBlt(
+            hdc as _,
+            rect.pos.x,
+            rect.pos.y,
+            rect.size.width,
+            rect.size.height,
+            mdc as _,
+            pos.x,
+            pos.y,
+            SRCCOPY,
+        );
+        DeleteDC(mdc as _);
+    }
+}
+
+pub fn draw_bitmap(hdc: *mut c_void, pos: Rect, bitmap: &BitMap) {
+    unsafe {
+        let mdc = CreateCompatibleDC(hdc as _);
+        SelectObject(mdc as _, bitmap.bmp as _);
+        StretchBlt(
+            hdc as _,
+            pos.pos.x,
+            pos.pos.y,
+            pos.size.width,
+            pos.size.height,
+            mdc as _,
+            0,
+            0,
+            bitmap.size.width,
+            bitmap.size.height,
+            SRCCOPY,
+        );
+        DeleteDC(mdc as _);
     }
 }

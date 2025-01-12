@@ -11,4 +11,13 @@ all-features = true
 no-deps = true
 
 [dependencies]
-winapi = { version = "0.3", features = ["winuser", "wincon", "windef", "libloaderapi", "ntdef", "wingdi", "minwindef"] }
+winapi = { version = "0.3", features = [
+    "winuser",
+    "wincon",
+    "windef",
+    "libloaderapi",
+    "ntdef",
+    "wingdi",
+    "minwindef",
+    "errhandlingapi",
+] }

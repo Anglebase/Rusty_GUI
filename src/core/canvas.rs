@@ -460,6 +460,14 @@ impl Canvas {
         put_bitmap(self.hdc, pos, bitmap);
     }
 
+    pub fn clip_bitmap(&self, rect: Rect, bitmap: &BitMap, pos: Point) {
+        clip_bitmap(self.hdc, rect, bitmap, pos);
+    }
+
+    pub fn draw_bitmap(&self, rect: Rect, bitmap: &BitMap) {
+        draw_bitmap(self.hdc, rect, bitmap);
+    }
+
     /// Create a new path in the current canvas.
     /// If a path has already been created, it will overwrite the previously created path.
     pub fn path<F: FnMut(&mut Path) -> PathShow>(&self, mut proc: F) {

@@ -66,10 +66,31 @@ mod tests {
                 path.move_to((500, 200));
                 // Draw a Star:
                 let r = rect!(500, 200, 500, 500);
-                path.chord(r, PI / 4.0,  PI / 2.0);
+                path.chord(r, PI / 4.0, PI / 2.0);
                 path.circle(r.center(), 1);
                 PathShow::Frame
             });
+
+            let bitmap = BitMap::new_with_canvas(&canvas, size!(200, 200));
+            bitmap.canvas(&canvas, |canvas: &mut Canvas| {
+                canvas.clear(rgb!(255, 0, 255));
+                canvas.rect(rect!(0, 0, 100, 100));
+                canvas.fill_rect(rect!(10, 10, 80, 80));
+                canvas.line(20, 20, 80, 80);
+                canvas.polyline(&[pos!(20, 20), pos!(80, 80), pos!(140, 20)]);
+                canvas.polygon(&[pos!(140, 20), pos!(200, 80), pos!(260, 20)]);
+                canvas.xy_text(pos!(0, 0), "Hello, world!", Default::default());
+            });
+            canvas.put_bitmap(pos!(500, 500), &bitmap);
+
+            canvas.draw_bitmap(rect!(750, 500, 500, 200), &bitmap);
+
+            let nmap = BitMap::new_with_canvas(&canvas, size!(50, 50));
+            nmap.canvas(&canvas, |canvas: &mut Canvas| {
+                canvas.clip_bitmap(rect!(0, 0, 50, 50), &bitmap, pos!(0, 0));
+            });
+
+            canvas.draw_bitmap(rect!(750, 750, 70, 70), &nmap);
         }
     }
 
