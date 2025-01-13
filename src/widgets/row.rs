@@ -8,6 +8,16 @@ struct Padding {
     right: i32,
     bottom: i32,
 }
+
+/// A container that arranges its children in a row.
+/// Its layout logic:
+/// - If there are no elements involved in the layout, then nothing will be done.
+/// - The Ratio mode element will degrade to Range mode based on its window size range.
+/// - The three layout modes are processed according to the following logic:
+///     1. LayoutMode::Fixed(width): The element has a fixed width and the width value is width.
+///     2. LayoutMode::Ratio(ratio): The element is a proportional width, and the actual width value is allocated based on the proportion value to the total proportion value of all proportional elements, excluding all fixed width elements, margins, and spacing.
+///     3. LayoutMode::Range { min, max, ratio }: Firstly, consider it as a Ratio mode element for allocation. If the result is not within the range of min to max, consider it as a Fixed mode element of min or max based on its size until all elements are successfully allocated.
+/// - LayoutMode::Ratio(ratio) and LayoutMode::Range { min: None, max: None, ratio } have exactly the same effect.
 pub struct Row {
     this: Window,
     layouts: Vec<(WindowID, LayoutMode)>,

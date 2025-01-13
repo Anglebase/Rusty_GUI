@@ -47,7 +47,7 @@ fn test_layout() {
     grid.add_layout(test2.as_window().get_id(), rect!(1, 0, 2, 1));
     test2.as_window().show();
 
-    let mut test3 = LayoutTest::new(grid.as_window());
+    let test3 = LayoutTest::new(grid.as_window());
     grid.add_layout(test3.as_window().get_id(), rect!(1, 1, 1, 1));
     test3.as_window().show();
 

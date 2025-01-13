@@ -49,6 +49,9 @@ impl<T: Element> Widget<T> {
         ret
     }
 
+    /// Create a new `Widget` with the given data.
+    /// The parameter `title`, `rect`, `parent` will be used to call `Window::new` to create the window.
+    /// `data` is the instance of the element. It is `T::default()` in the case of `Widget::new`.
     pub fn new_from(data: T, title: &str, rect: Rect, parent: Option<&Window>) -> Self {
         let data = Box::new(data);
         // make the same address for the type data and the dynamic data
