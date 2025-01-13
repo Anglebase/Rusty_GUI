@@ -59,7 +59,7 @@ impl Window {
             ..Default::default()
         }
     }
-    /// Set the minimum width of the window.
+    /// Set the minimum width of the window(with frame).
     /// # Panics
     /// If the window is default, it will panic.
     pub fn set_min_width(&mut self, width: i32) {
@@ -67,7 +67,7 @@ impl Window {
         self.min_width = Some(width);
     }
 
-    /// Set the minimum height of the window.
+    /// Set the minimum height of the window(with frame).
     /// # Panics
     /// If the window is default, it will panic.
     pub fn set_min_height(&mut self, height: i32) {
@@ -75,7 +75,7 @@ impl Window {
         self.min_height = Some(height);
     }
 
-    /// Set the maximum width of the window.
+    /// Set the maximum width of the window(with frame).
     /// # Panics
     /// If the window is default, it will panic.
     /// # Note
@@ -83,10 +83,19 @@ impl Window {
     pub fn set_max_width(&mut self, width: i32) {
         self.check_hwnd();
         self.max_width = Some(width);
-        self.get_id().disable_maximize();
+        self.disable_maximize();
+        let current_width = self.absrect().size.width;
+        if current_width > width {
+            let rect = {
+                let mut rect = self.absrect();
+                rect.size.width = width;
+                rect
+            };
+            self.set_absrect(rect);
+        }
     }
 
-    /// Set the maximum height of the window.
+    /// Set the maximum height of the window(with frame).
     /// # Panics
     /// If the window is default, it will panic.
     /// # Note
@@ -95,9 +104,18 @@ impl Window {
         self.check_hwnd();
         self.max_height = Some(height);
         self.disable_maximize();
+        let current_height = self.absrect().size.height;
+        if current_height > height {
+            let rect = {
+                let mut rect = self.absrect();
+                rect.size.height = height;
+                rect
+            };
+            self.set_absrect(rect);
+        }
     }
 
-    /// Set the minimum size of the window.
+    /// Set the minimum size of the window(with frame).
     /// It is the same as calling `set_min_width` and `set_min_height` separately.
     /// # Panics
     /// If the window is default, it will panic.
@@ -107,7 +125,7 @@ impl Window {
         self.min_height = Some(size.height);
     }
 
-    /// Set the maximum size of the window.
+    /// Set the maximum size of the window(with frame).
     /// It is the same as calling `set_max_width` and `set_max_height` separately.
     /// # Panics
     /// If the window is default, it will panic.
@@ -117,7 +135,70 @@ impl Window {
         self.check_hwnd();
         self.max_width = Some(size.width);
         self.max_height = Some(size.height);
+        let (current_width, current_height) = self.absrect().size.into();
+        if current_width > size.width {
+            let rect = {
+                let mut rect = self.absrect();
+                rect.size.width = size.width;
+                rect
+            };
+            self.set_absrect(rect);
+        }
+        if current_height > size.height {
+            let rect = {
+                let mut rect = self.absrect();
+                rect.size.height = size.height;
+                rect
+            };
+            self.set_absrect(rect);
+        }
         self.disable_maximize();
+    }
+
+    /// Lift the minimum width limit of the window(with frame).
+    pub fn lift_min_width(&mut self) {
+        self.check_hwnd();
+        self.min_width = None;
+    }
+
+    /// Lift the minimum height limit of the window(with frame).
+    pub fn lift_min_height(&mut self) {
+        self.check_hwnd();
+        self.min_height = None;
+    }
+
+    /// Lift the maximum width limit of the window(with frame).
+    pub fn lift_max_width(&mut self) {
+        self.check_hwnd();
+        self.max_width = None;
+        if self.max_height.is_none() {
+            self.enable_maximize();
+        }
+    }
+
+    /// Lift the maximum height limit of the window(with frame).
+    pub fn lift_max_height(&mut self) {
+        self.check_hwnd();
+        self.max_height = None;
+        if self.max_width.is_none() {
+            self.enable_maximize();
+        }
+    }
+
+    /// Lift the minimum and maximum size limits of the window(with frame).
+    pub fn lift_min_size(&mut self) {
+        self.check_hwnd();
+        self.min_width = None;
+        self.min_height = None;
+        self.enable_maximize();
+    }
+
+    /// Lift the minimum and maximum size limits of the window(with frame).
+    pub fn lift_max_size(&mut self) {
+        self.check_hwnd();
+        self.max_width = None;
+        self.max_height = None;
+        self.enable_maximize();
     }
 
     /// For each child window of the window, call the given function.
@@ -282,9 +363,10 @@ impl WindowID {
     }
 
     /// Set the rect of the window.
+    /// It is the absolute position of the window.
     /// # Panics
     /// If the window is default, it will panic.
-    pub fn set_rect(&self, rect: Rect) {
+    pub fn set_absrect(&self, rect: Rect) {
         self.check_hwnd();
         set_window_rect(self.hwnd, rect);
     }
