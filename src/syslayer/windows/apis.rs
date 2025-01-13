@@ -1,4 +1,4 @@
-use crate::{rect, AbstractElement, KeyCode, Point, Rect, Size};
+use crate::{rect, AbstractElement, KeyCode, Point, Rect, Size, WindowID};
 use std::any::Any;
 use std::{
     os::raw::c_void,
@@ -514,5 +514,25 @@ pub fn fix_window_size(hwnd: *mut c_void) {
     unsafe {
         let style = GetWindowLongW(hwnd as _, GWL_STYLE) as u32;
         SetWindowLongW(hwnd as _, GWL_STYLE, (style & !WS_SIZEBOX) as _);
+    }
+}
+
+pub fn send_wm_size_message(hwnd: *mut c_void, size: Size) {
+    unsafe {
+        let (w, h) = size.into();
+        SendMessageW(
+            hwnd as _,
+            WM_SIZE,
+            SIZE_RESTORED,
+            ((w as u32) | ((h as u32) << 16)) as _,
+        );
+    }
+}
+
+pub fn get_parent_window(hwnd: *mut c_void) -> WindowID {
+    unsafe {
+        WindowID {
+            hwnd: GetParent(hwnd as _) as _,
+        }
     }
 }

@@ -1,11 +1,18 @@
-use std::{collections::HashMap, i32};
+use std::{collections::HashMap, i32, sync::mpsc::channel};
 
 use crate::{widgets::LayoutMode, *};
+
+struct Padding {
+    left: i32,
+    top: i32,
+    right: i32,
+    bottom: i32,
+}
 
 pub struct Column {
     this: Window,
     layouts: Vec<(WindowID, LayoutMode)>,
-    padding: i32,
+    padding: Padding,
     spacing: i32,
 }
 
@@ -14,7 +21,12 @@ impl Default for Column {
         Self {
             this: Window::default(),
             layouts: vec![],
-            padding: 5,
+            padding: Padding {
+                left: 5,
+                top: 5,
+                right: 5,
+                bottom: 5,
+            },
             spacing: 3,
         }
     }
@@ -39,7 +51,7 @@ impl EventListener for Column {
 impl Column {
     fn update(&mut self, size: Size) {
         let size = size!(size.width, size.height);
-        // If there are no layouts, do nothing
+        // If there is no layout, do nothing
         if self.layouts.is_empty() {
             return;
         }
@@ -67,8 +79,9 @@ impl Column {
                 }
             }
         }
-        // Set the minimum and maximum height of the column window
-        let spaces = self.spacing * (self.layouts.len() as i32 - 1) + self.padding * 2;
+        // Set the minimum and maximum height of the column window.
+        let spaces =
+            self.spacing * (self.layouts.len() as i32 - 1) + self.padding.top + self.padding.bottom;
         let ais = self.this.absrect().size.height - self.this.rect().size.height;
         if min_height > 0 {
             self.this.set_min_height(min_height + spaces + ais);
@@ -80,6 +93,24 @@ impl Column {
         } else {
             self.this.lift_max_height();
         }
+        for (_, mode) in &mut self.layouts {
+            let (tx, rx) = channel();
+            self.this.foreach(move |child| {
+                let min = child.as_window().min_width;
+                let max = child.as_window().max_width;
+                tx.send((min, max)).unwrap();
+            });
+            let (min, max) = rx.try_recv().unwrap();
+            *mode = if let LayoutMode::Ratio(ratio) = mode {
+                LayoutMode::Range {
+                    min,
+                    max,
+                    ratio: *ratio,
+                }
+            } else {
+                *mode
+            }
+        }
         // Calculate the position and size of each layout
         let mut test = self.layouts.clone();
         test.iter_mut().for_each(|x| {
@@ -89,7 +120,7 @@ impl Column {
             }
         });
         let result = loop {
-            // Calculate the sum of all ratios
+            // Calculate all of the ratios.
             let sum_ratio = test.iter().fold(0.0, |acc, x| {
                 let (_, mode) = x;
                 match mode {
@@ -104,20 +135,27 @@ impl Column {
                     _ => acc,
                 }
             });
-            // Try to calculate the position and size of each layout
+            // Try to calculate the position and size of each layout.
             let mut result = HashMap::new();
-            let mut y = self.padding;
+            let mut y = self.padding.top;
             for &(layout, mode) in &test {
                 let height = match mode {
                     LayoutMode::Fixed(height) => height,
-                    LayoutMode::Ratio(ratio) => ((size.height - spaces - sum_fixed) as f32 * ratio / sum_ratio).max(0.0) as i32,
+                    LayoutMode::Ratio(ratio) => ((size.height - spaces - sum_fixed) as f32 * ratio
+                        / sum_ratio)
+                        .max(0.0) as i32,
                     _ => panic!("Unreachable branch!"),
                 };
-                let rect = rect!(self.padding, y, size.width - self.padding * 2, height);
+                let rect = rect!(
+                    self.padding.left,
+                    y,
+                    size.width - self.padding.left - self.padding.right,
+                    height
+                );
                 result.insert(layout, rect);
                 y += height + self.spacing;
             }
-            // Check if the results are within their range and update the test
+            // Check the result is in their range and update the test.
             let mut changed = false;
             for (i, &(layout, mode)) in self.layouts.iter().enumerate() {
                 if let LayoutMode::Range { min, max, .. } = mode {
@@ -140,10 +178,11 @@ impl Column {
                 break result;
             }
         };
-        // Set the height restrictions of the column window
-        let mut it_min_width: Option<i32> = None;
-        let mut it_max_width: Option<i32> = None;
+        // Set the width limits of the column window.
+        let (tx, rx) = channel();
         self.this.foreach(move |child| {
+            let mut it_min_width: Option<i32> = None;
+            let mut it_max_width: Option<i32> = None;
             let rect = result.get(&child.as_window().get_id());
             if let Some(rect) = rect {
                 child.as_window().set_absrect(*rect);
@@ -162,7 +201,9 @@ impl Column {
                     }
                 }
             }
+            tx.send((it_min_width, it_max_width)).unwrap();
         });
+        let (it_min_width, it_max_width) = rx.try_recv().unwrap();
         if let Some(min_width) = it_min_width {
             self.this.set_min_width(min_width);
         } else {
@@ -173,11 +214,14 @@ impl Column {
         } else {
             self.this.lift_max_width();
         }
+        if let Some(id) = self.as_window().parent() {
+            id.update_size();
+        }
     }
 }
 
 impl Column {
-    /// Create a new `Column` Widget.
+    /// Create a new `Column` widget.
     pub fn new(rect: Rect, parent: Option<&Window>) -> Widget<Self> {
         Widget::new("Column", rect, parent)
     }
@@ -196,7 +240,32 @@ impl Column {
 
     /// Set the padding of the column.
     pub fn set_padding(&mut self, padding: i32) {
-        self.padding = padding;
+        self.padding = Padding {
+            left: padding,
+            top: padding,
+            right: padding,
+            bottom: padding,
+        };
+        self.update(self.this.rect().size);
+    }
+
+    pub fn set_left_padding(&mut self, padding: i32) {
+        self.padding.left = padding;
+        self.update(self.this.rect().size);
+    }
+
+    pub fn set_top_padding(&mut self, padding: i32) {
+        self.padding.top = padding;
+        self.update(self.this.rect().size);
+    }
+
+    pub fn set_right_padding(&mut self, padding: i32) {
+        self.padding.right = padding;
+        self.update(self.this.rect().size);
+    }
+
+    pub fn set_bottom_padding(&mut self, padding: i32) {
+        self.padding.bottom = padding;
         self.update(self.this.rect().size);
     }
 

@@ -37,18 +37,26 @@ fn test() {
     let app = Application::new(true);
 
     let mut root = Column::new(rect!(100, 100, 1600, 900), None);
-    root.as_window().show();
 
     let mut r1 = Row::new(rect!(0, 0, 100, 100), Some(root.as_window()));
     root.add_layout(r1.as_window().get_id(), LayoutMode::Ratio(2.0));
     r1.as_window().show();
+    r1.set_padding(0);
 
     let mut r2 = Row::new(rect!(0, 0, 100, 100), Some(root.as_window()));
     root.add_layout(r2.as_window().get_id(), LayoutMode::Ratio(1.0));
     r2.as_window().show();
+    r2.set_padding(0);
 
     let test1 = LayoutTest::new(r1.as_window());
-    r1.add_layout(test1.as_window().get_id(), LayoutMode::Ratio(2.0));
+    r1.add_layout(
+        test1.as_window().get_id(),
+        LayoutMode::Range {
+            min: Some(100),
+            max: Some(300),
+            ratio: 2.5,
+        },
+    );
     test1.as_window().show();
 
     let test2 = LayoutTest::new(r1.as_window());
@@ -63,7 +71,14 @@ fn test() {
     test2.as_window().show();
 
     let test4 = LayoutTest::new(r1.as_window());
-    r1.add_layout(test4.as_window().get_id(), LayoutMode::Ratio(2.0));
+    r1.add_layout(
+        test4.as_window().get_id(),
+        LayoutMode::Range {
+            min: Some(100),
+            max: Some(200),
+            ratio: 1.0,
+        },
+    );
     test4.as_window().show();
 
     let test5 = LayoutTest::new(r2.as_window());
@@ -77,6 +92,17 @@ fn test() {
     let test7 = LayoutTest::new(r2.as_window());
     r2.add_layout(test7.as_window().get_id(), LayoutMode::Ratio(1.0));
     test7.as_window().show();
+
+    if let Some(width) = root.as_window().max_width() {
+        let rect = {
+            let mut rect = root.as_window().absrect();
+            rect.size.width = width;
+            rect
+        };
+        root.as_window().set_absrect(rect);
+    }
+
+    root.as_window().show();
 
     app.exec(EventLoop::Blocking);
 }

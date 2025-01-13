@@ -1,11 +1,17 @@
-use std::{collections::HashMap, i32};
+use std::{collections::HashMap, i32, sync::mpsc::channel};
 
 use crate::{widgets::LayoutMode, *};
 
+struct Padding {
+    left: i32,
+    top: i32,
+    right: i32,
+    bottom: i32,
+}
 pub struct Row {
     this: Window,
     layouts: Vec<(WindowID, LayoutMode)>,
-    padding: i32,
+    padding: Padding,
     spacing: i32,
 }
 
@@ -14,7 +20,12 @@ impl Default for Row {
         Self {
             this: Window::default(),
             layouts: vec![],
-            padding: 5,
+            padding: Padding {
+                left: 5,
+                top: 5,
+                right: 5,
+                bottom: 5,
+            },
             spacing: 3,
         }
     }
@@ -68,7 +79,8 @@ impl Row {
             }
         }
         // Set the minimum and maximum width of the row window.
-        let spaces = self.spacing * (self.layouts.len() as i32 - 1) + self.padding * 2;
+        let spaces =
+            self.spacing * (self.layouts.len() as i32 - 1) + self.padding.left + self.padding.right;
         let ais = self.this.absrect().size.width - self.this.rect().size.width;
         if min_width > 0 {
             self.this.set_min_width(min_width + spaces + ais);
@@ -79,6 +91,24 @@ impl Row {
             self.this.set_max_width(max_width + spaces + ais);
         } else {
             self.this.lift_max_width();
+        }
+        for (_, mode) in &mut self.layouts {
+            let (tx, rx) = channel();
+            self.this.foreach(move |child| {
+                let min = child.as_window().min_width;
+                let max = child.as_window().max_width;
+                tx.send((min, max)).unwrap();
+            });
+            let (min, max) = rx.try_recv().unwrap();
+            *mode = if let LayoutMode::Ratio(ratio) = mode {
+                LayoutMode::Range {
+                    min,
+                    max,
+                    ratio: *ratio,
+                }
+            } else {
+                *mode
+            }
         }
         // Calculate the position and size of each layout
         let mut test = self.layouts.clone();
@@ -106,7 +136,7 @@ impl Row {
             });
             // Try to calculate the position and size of each layout.
             let mut result = HashMap::new();
-            let mut x = self.padding;
+            let mut x = self.padding.left;
             for &(layout, mode) in &test {
                 let width = match mode {
                     LayoutMode::Fixed(width) => width,
@@ -115,7 +145,12 @@ impl Row {
                         .max(0.0) as i32,
                     _ => panic!("Unreachable branch!"),
                 };
-                let rect = rect!(x, self.padding, width, size.height - self.padding * 2);
+                let rect = rect!(
+                    x,
+                    self.padding.top,
+                    width,
+                    size.height - self.padding.top - self.padding.bottom
+                );
                 result.insert(layout, rect);
                 x += width + self.spacing;
             }
@@ -143,9 +178,10 @@ impl Row {
             }
         };
         // Set the height limits of the row window.
-        let mut it_min_height: Option<i32> = None;
-        let mut it_max_height: Option<i32> = None;
+        let (tx, rx) = channel();
         self.this.foreach(move |child| {
+            let mut it_min_height: Option<i32> = None;
+            let mut it_max_height: Option<i32> = None;
             let rect = result.get(&child.as_window().get_id());
             if let Some(rect) = rect {
                 child.as_window().set_absrect(*rect);
@@ -164,7 +200,9 @@ impl Row {
                     }
                 }
             }
+            tx.send((it_min_height, it_max_height)).unwrap();
         });
+        let (it_min_height, it_max_height) = rx.try_recv().unwrap();
         if let Some(min_height) = it_min_height {
             self.this.set_min_height(min_height);
         } else {
@@ -174,6 +212,9 @@ impl Row {
             self.this.set_max_height(max_height);
         } else {
             self.this.lift_max_height();
+        }
+        if let Some(id) = self.as_window().parent() {
+            id.update_size();
         }
     }
 }
@@ -198,7 +239,32 @@ impl Row {
 
     /// Set the padding of the row.
     pub fn set_padding(&mut self, padding: i32) {
-        self.padding = padding;
+        self.padding = Padding {
+            left: padding,
+            top: padding,
+            right: padding,
+            bottom: padding,
+        };
+        self.update(self.this.rect().size);
+    }
+
+    pub fn set_left_padding(&mut self, padding: i32) {
+        self.padding.left = padding;
+        self.update(self.this.rect().size);
+    }
+
+    pub fn set_top_padding(&mut self, padding: i32) {
+        self.padding.top = padding;
+        self.update(self.this.rect().size);
+    }
+
+    pub fn set_right_padding(&mut self, padding: i32) {
+        self.padding.right = padding;
+        self.update(self.this.rect().size);
+    }
+
+    pub fn set_bottom_padding(&mut self, padding: i32) {
+        self.padding.bottom = padding;
         self.update(self.this.rect().size);
     }
 

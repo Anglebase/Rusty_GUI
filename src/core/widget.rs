@@ -2,7 +2,7 @@
 
 use std::ops::{Deref, DerefMut};
 
-use crate::{send_window_created_msg, Rect};
+use crate::{send_window_created_msg, send_wm_size_message, Rect};
 
 use super::{AbstractElement, Element, Window};
 
@@ -44,7 +44,8 @@ impl<T: Element> Widget<T> {
             addr,
         };
         *ret.as_window_mut() = Window::new(title, rect, parent, &ret);
-        send_window_created_msg(ret.as_window().id.hwnd);
+        send_window_created_msg(ret.as_window().hwnd);
+        send_wm_size_message(ret.as_window().hwnd, rect.size);
         ret
     }
 
@@ -61,7 +62,8 @@ impl<T: Element> Widget<T> {
             addr,
         };
         *ret.as_window_mut() = Window::new(title, rect, parent, &ret);
-        send_window_created_msg(ret.as_window().id.hwnd);
+        send_window_created_msg(ret.as_window().hwnd);
+        send_wm_size_message(ret.as_window().hwnd, rect.size);
         ret
     }
 

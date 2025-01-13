@@ -201,6 +201,19 @@ impl Window {
         self.enable_maximize();
     }
 
+    pub fn min_height(&self) -> Option<i32> {
+        self.min_height
+    }
+    pub fn min_width(&self) -> Option<i32> {
+        self.min_width
+    }
+    pub fn max_height(&self) -> Option<i32> {
+        self.max_height
+    }
+    pub fn max_width(&self) -> Option<i32> {
+        self.max_width
+    }
+
     /// For each child window of the window, call the given function.
     /// It will apply the function to each child window recursively.
     /// You can use it with method `read_data()` and `write_data()` to store and retrieve data from the child windows.
@@ -360,6 +373,11 @@ impl WindowID {
     pub fn update(&self) {
         self.check_hwnd();
         update_window(self.hwnd);
+    }
+
+    pub fn update_size(&self) {
+        self.check_hwnd();
+        send_wm_size_message(self.hwnd, self.rect().size);
     }
 
     /// Set the rect of the window.
@@ -577,6 +595,18 @@ impl WindowID {
     pub fn kill_timer(&self, id: usize) {
         self.check_hwnd();
         kill_window_timer(self.hwnd, id);
+    }
+
+    /// Get the parent window of the window.
+    /// If the window has no parent, it will return None.
+    pub fn parent(&self) -> Option<WindowID> {
+        self.check_hwnd();
+        let ret = get_parent_window(self.hwnd);
+        if ret.hwnd.is_null() {
+            None
+        } else {
+            Some(ret)
+        }
     }
 }
 
