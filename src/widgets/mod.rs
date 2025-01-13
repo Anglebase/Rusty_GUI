@@ -3,12 +3,14 @@ mod pushbutton;
 mod switch;
 mod lineedit;
 mod row;
+mod column;
 
 pub use block::Block;
 pub use pushbutton::PushButton;
 pub use switch::Switch;
 pub use lineedit::LineEdit;
 pub use row::Row;
+pub use column::Column;
 
 #[derive(Debug, Clone, Copy)]
 pub enum LayoutMode {

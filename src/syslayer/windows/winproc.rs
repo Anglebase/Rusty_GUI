@@ -152,6 +152,9 @@ pub(super) unsafe extern "system" fn winproc(
             return 0;
         }
         WM_SIZE => {
+            if obj.as_window().hwnd.is_null() {
+                return 0;
+            }
             let size = lparam_to_size!(lparam);
             let ty = match wparam {
                 SIZE_MAXIMIZED => WindowSize::Maximize,
